@@ -94,11 +94,11 @@ export async function POST(req: Request) {
       success: true,
       data: newBlog,
     });
-  } catch (error: any) {
+  } catch {
     return NextResponse.json(
       {
         success: false,
-        error: error.message,
+        error: "Server error",
       },
       { status: 500 }
     );

@@ -49,9 +49,9 @@ export async function POST(req: Request) {
         liked: true,
       });
     }
-  } catch (error: any) {
+  } catch {
     return NextResponse.json(
-      { success: false, error: error.message },
+      { success: false, error: "Server error" },
       { status: 500 }
     );
   }

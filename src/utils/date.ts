@@ -41,7 +41,7 @@ export function stripHtml(html: string): string {
   if (!html) return "";
   
   // First, strip out the "Remove" buttons (both old and new formats) to prevent "Remove" from appearing in excerpts
-  let cleanHtml = html.replace(/<button[^>]*>Remove<\/button>/gi, "");
+  const cleanHtml = html.replace(/<button[^>]*>Remove<\/button>/gi, "");
   
   // Then strip all remaining HTML tags
   return cleanHtml.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim();

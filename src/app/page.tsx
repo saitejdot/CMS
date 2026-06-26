@@ -1,19 +1,23 @@
 import { connectDB } from "@/lib/db";
 import Blog from "@/models/Blog";
+import Subscriber from "@/models/Subscriber";
 import Link from "next/link";
 import SubscribeForm from "@/components/SubscribeForm";
 import ContactSection from "@/components/ContactSection";
 import { formatDateIST, stripHtml } from "@/utils/date";
+import StoryCarousel from "@/components/StoryCarousel";
 
 export const dynamic = 'force-dynamic';
 
 export default async function Home() {
-  let blogs: any[] = [];
+  let blogs: { _id: string; title: string; slug: string; createdAt: Date; content: string }[] = [];
+  let subscriberCount = 0;
   
   try {
     await connectDB();
     // Get latest 3 blogs directly from DB
     blogs = await Blog.find().sort({ createdAt: -1 }).limit(3).lean();
+    subscriberCount = await Subscriber.countDocuments();
   } catch (error) {
     console.error("Home page DB error:", error);
     // Keep blogs as empty array so page doesn't crash
@@ -23,13 +27,28 @@ export default async function Home() {
     <>
     <main className="max-w-4xl mx-auto p-4">
 
-     {/* 🔵 BANNER */}
-<div className="h-42 w-full rounded-xl overflow-hidden relative">
-  <img
-    src="/banner.jpeg"
-    className="w-full h-full object-cover"
-  />
-  <div className="absolute inset-0 bg-black/20"></div>
+     {/* 🔵 STORY CAROUSEL */}
+<StoryCarousel />
+
+{/* SUBSCRIBER COUNT — right-aligned pill below the banner */}
+<div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8, marginBottom: 4 }}>
+  <span style={{
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 5,
+    fontSize: "0.75rem",
+    fontWeight: 500,
+    color: "var(--muted)",
+    letterSpacing: "0.02em",
+  }}>
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+      <circle cx="9" cy="7" r="4"/>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+    </svg>
+    {subscriberCount.toLocaleString()} {subscriberCount === 1 ? "subscriber" : "subscribers"}
+  </span>
 </div>
 
 {/* 🟢 PROFILE */}
@@ -40,6 +59,7 @@ export default async function Home() {
         borderColor: "var(--bg)",
       }}
     >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/profile.jpeg"
         alt="Profile"
@@ -73,7 +93,7 @@ export default async function Home() {
 
   <div className="space-y-4">
     {blogs.length > 0 ? (
-      blogs.map((blog: any) => (
+      blogs.map((blog) => (
         <div key={blog._id} className="card p-4 shadow-sm">
           <Link href={`/blog/${blog.slug}`}>
             <h3 className="text-lg font-semibold text-accent hover:underline">

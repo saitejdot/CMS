@@ -11,9 +11,9 @@ export async function POST(req: Request) {
     await Blog.findByIdAndDelete(id);
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch {
     return NextResponse.json(
-      { success: false, error: error.message },
+      { success: false, error: "Server error" },
       { status: 500 }
     );
   }

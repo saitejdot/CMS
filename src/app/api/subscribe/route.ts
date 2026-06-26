@@ -18,7 +18,7 @@ export async function POST(req: Request) {
     await Subscriber.create({ email });
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch {
     return NextResponse.json(
       { success: false, error: "Already subscribed or error" },
       { status: 500 }

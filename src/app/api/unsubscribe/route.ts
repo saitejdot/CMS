@@ -40,7 +40,7 @@ export async function GET(req: Request) {
     `, {
       headers: { "Content-Type": "text/html" }
     });
-  } catch (error) {
+  } catch {
     return new NextResponse("Error unsubscribing", { status: 500 });
   }
 }

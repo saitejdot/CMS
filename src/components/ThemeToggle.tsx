@@ -11,9 +11,11 @@ export default function ThemeToggle() {
 
     if (saved === "dark") {
       root.classList.add("dark");
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDark(true);
     } else {
       root.classList.remove("dark");
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDark(false);
     }
   }, []);

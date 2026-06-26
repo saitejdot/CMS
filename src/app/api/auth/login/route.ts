@@ -4,7 +4,7 @@ export async function POST(req: Request) {
   try {
     const { password } = await req.json();
 
-    if (password === "admin123") {
+    if (password === process.env.ADMIN_PASSWORD) {
       const response = NextResponse.json({ success: true });
 
       response.cookies.set("admin", "true", {
@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ success: false }, { status: 401 });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { success: false, error: "Server error" },
       { status: 500 }

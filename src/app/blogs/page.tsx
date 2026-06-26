@@ -6,8 +6,19 @@ import ContactSection from "@/components/ContactSection";
 import BackButton from "@/components/BackButton";
 import { formatDateIST, stripHtml } from "@/utils/date";
 
+interface Blog {
+  _id: string;
+  title: string;
+  slug: string;
+  category: string;
+  createdAt: string;
+  content: string;
+  likes: number;
+  views: number;
+}
+
 export default function BlogsPage() {
-  const [blogs, setBlogs] = useState<any[]>([]);
+  const [blogs, setBlogs] = useState<Blog[]>([]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [sort, setSort] = useState("latest");

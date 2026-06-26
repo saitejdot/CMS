@@ -7,7 +7,7 @@ import SubscribeForm from "@/components/SubscribeForm";
 import ContactSection from "@/components/ContactSection";
 import { formatDateTimeIST } from "@/utils/date";
 
-export default async function BlogPage({ params }: any) {
+export default async function BlogPage({ params }: { params: Promise<{ slug: string }> }) {
   await connectDB();
 
   const { slug } = await params;

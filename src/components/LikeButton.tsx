@@ -28,6 +28,7 @@ export default function LikeButton({
       localStorage.getItem("cms_liked_posts") || "[]"
     );
     if (likedPosts.includes(slug)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLiked(true);
     }
   }, [slug]);

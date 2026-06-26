@@ -19,10 +19,10 @@ export default function SubscribeForm() {
     const data = await res.json();
 
     if (data.success) {
-      alert("Subscribed successfully!");
+      alert("Thanks! Remember you always have a choice to unsubscribe.");
       setEmail("");
     } else {
-      alert("Already subscribed or error");
+      alert("relax, you already exist in my database.");
     }
 
     setLoading(false);

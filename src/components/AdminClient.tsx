@@ -359,7 +359,7 @@ export default function AdminClient() {
   const fetchSubscribers = async () => {
     setSubLoading(true);
     try {
-      const res = await fetch("/api/subscribers");
+      const res = await fetch("/api/admin/subscribers");
       const data = await res.json();
       if (data.success) {
         setSubCount(data.count ?? 0);
@@ -382,7 +382,7 @@ export default function AdminClient() {
       return;
     }
 
-    await fetch("/api/blog/create", {
+    await fetch("/api/admin/blog/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -403,7 +403,7 @@ export default function AdminClient() {
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this blog post?")) return;
 
-    await fetch("/api/blog/delete", {
+    await fetch("/api/admin/blog/delete", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id }),
@@ -426,7 +426,7 @@ export default function AdminClient() {
       return;
     }
 
-    await fetch("/api/blog/update", {
+    await fetch("/api/admin/blog/update", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

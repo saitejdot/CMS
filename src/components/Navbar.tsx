@@ -24,18 +24,12 @@ export default function Navbar() {
 
         {/* DESKTOP NAV */}
         <div className="hidden md:flex items-center gap-6 text-sm">
-          <Link href="/" style={{ color: "var(--text)" }}>
-            Home
-          </Link>
-          <Link href="/blogs" style={{ color: "var(--text)" }}>
-            Blogs
-          </Link>
-          <Link href="/contact" style={{ color: "var(--text)" }}>
-            Contact
-          </Link>
-          <Link href="/admin" style={{ color: "var(--text)" }}>
-            Admin
-          </Link>
+            <Link href="/" className="hover:text-yellow-500 transition">Home</Link>
+            <Link href="/about" className="hover:text-yellow-500 transition">About</Link>
+            <Link href="/now" className="hover:text-yellow-500 transition">Now</Link>
+            <Link href="/career" className="hover:text-yellow-500 transition">Career</Link>
+            <Link href="/stories" className="hover:text-yellow-500 transition">Stories</Link>
+            <Link href="/contact" className="hover:text-yellow-500 transition">Contact</Link>
 
           <ThemeToggle />
         </div>
@@ -73,37 +67,12 @@ export default function Navbar() {
 
           {/* NAV LINKS */}
           <nav className="flex flex-col gap-5 text-lg">
-            <Link
-              href="/"
-              onClick={() => setOpen(false)}
-              style={{ color: "var(--text)" }}
-            >
-              Home
-            </Link>
-
-            <Link
-              href="/blogs"
-              onClick={() => setOpen(false)}
-              style={{ color: "var(--text)" }}
-            >
-              Blogs
-            </Link>
-
-            <Link
-              href="/contact"
-              onClick={() => setOpen(false)}
-              style={{ color: "var(--text)" }}
-            >
-              Contact
-            </Link>
-
-            <Link
-              href="/admin"
-              onClick={() => setOpen(false)}
-              style={{ color: "var(--text)" }}
-            >
-              Admin
-            </Link>
+            <Link href="/" onClick={() => setOpen(false)} style={{ color: "var(--text)" }}>Home</Link>
+            <Link href="/about" onClick={() => setOpen(false)} style={{ color: "var(--text)" }}>About</Link>
+            <Link href="/now" onClick={() => setOpen(false)} style={{ color: "var(--text)" }}>Now</Link>
+            <Link href="/career" onClick={() => setOpen(false)} style={{ color: "var(--text)" }}>Career</Link>
+            <Link href="/stories" onClick={() => setOpen(false)} style={{ color: "var(--text)" }}>Stories</Link>
+            <Link href="/contact" onClick={() => setOpen(false)} style={{ color: "var(--text)" }}>Contact</Link>
 
             <div className="pt-4 border-t" style={{ borderColor: "var(--border)" }}>
               <ThemeToggle />

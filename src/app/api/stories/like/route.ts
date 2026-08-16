@@ -1,7 +1,7 @@
 /**
- * POST /api/blog/like
+ * POST /api/story/like
  *
- * Public endpoint. Toggles a like on a blog post.
+ * Public endpoint. Toggles a like on a story post.
  *
  * Security layers:
  *   1. Rate limiting — 30 requests / minute / IP
@@ -12,7 +12,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { connectDB } from "@/lib/db";
-import Blog from "@/models/Blog";
+import Story from "@/models/Story";
 import { rateLimiters, getClientIP } from "@/lib/rateLimit";
 import { generateRequestId } from "@/lib/requestId";
 
@@ -70,29 +70,29 @@ export async function POST(request: Request) {
   try {
     await connectDB();
 
-    const blog = await Blog.findOne({ slug });
-    if (!blog) {
+    const story = await Story.findOne({ slug });
+    if (!story) {
       return NextResponse.json(
-        { success: false, error: "Blog not found" },
+        { success: false, error: "Story not found" },
         { status: 404 }
       );
     }
 
-    const alreadyLiked = blog.likedBy.includes(visitorId);
+    const alreadyLiked = story.likedBy.includes(visitorId);
 
     if (alreadyLiked) {
-      blog.likedBy = blog.likedBy.filter((id: string) => id !== visitorId);
-      blog.likes = Math.max(0, blog.likes - 1);
+      story.likedBy = story.likedBy.filter((id: string) => id !== visitorId);
+      story.likes = Math.max(0, story.likes - 1);
     } else {
-      blog.likedBy.push(visitorId);
-      blog.likes += 1;
+      story.likedBy.push(visitorId);
+      story.likes += 1;
     }
 
-    await blog.save();
+    await story.save();
 
     return NextResponse.json({
       success: true,
-      likes: blog.likes,
+      likes: story.likes,
       liked: !alreadyLiked,
     });
   } catch (err) {

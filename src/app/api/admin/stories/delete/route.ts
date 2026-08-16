@@ -1,7 +1,7 @@
 /**
- * POST /api/admin/blog/delete
+ * POST /api/admin/story/delete
  *
- * Deletes a blog post by ID.
+ * Deletes a story post by ID.
  *
  * Security layers (in order):
  *   1. Middleware — front-line JWT check on /api/admin/*
@@ -14,15 +14,15 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { connectDB } from "@/lib/db";
-import Blog from "@/models/Blog";
+import Story from "@/models/Story";
 import { requireAdmin } from "@/lib/auth";
 import { checkCSRF } from "@/lib/csrf";
 import { generateRequestId } from "@/lib/requestId";
 
 const MAX_BODY_BYTES = 1024; // 1 KB
 
-const DeleteBlogSchema = z.object({
-  id: z.string().length(24, "Invalid blog ID"),
+const DeleteStorySchema = z.object({
+  id: z.string().length(24, "Invalid story ID"),
 });
 
 export async function POST(request: Request) {
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const parsed = DeleteBlogSchema.safeParse(body);
+  const parsed = DeleteStorySchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
       { success: false, error: "Validation failed", details: parsed.error.flatten() },
@@ -67,10 +67,10 @@ export async function POST(request: Request) {
   // 5. Business logic
   try {
     await connectDB();
-    await Blog.findByIdAndDelete(parsed.data.id);
+    await Story.findByIdAndDelete(parsed.data.id);
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error(`[${reqId}] Blog delete failed:`, (err as Error).message);
+    console.error(`[${reqId}] Story delete failed:`, (err as Error).message);
     return NextResponse.json(
       { success: false, error: "Server error" },
       { status: 500 }

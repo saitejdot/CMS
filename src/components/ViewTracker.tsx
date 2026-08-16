@@ -23,7 +23,7 @@ export default function ViewTracker({
 
   useEffect(() => {
     const visitorId = getVisitorId();
-    fetch("/api/blog/view", {
+    fetch("/api/story/view", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ slug, visitorId }),

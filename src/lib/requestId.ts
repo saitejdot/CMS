@@ -7,7 +7,7 @@
  *
  * Usage:
  *   const reqId = generateRequestId();
- *   console.error(`[${reqId}] Blog create failed:`, errorMessage);
+ *   console.error(`[${reqId}] Story create failed:`, errorMessage);
  */
 
 export function generateRequestId(): string {

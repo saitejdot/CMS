@@ -6,37 +6,29 @@ The goal is to transition the CMS from a simple MVP to a robust, secure, product
 
 ---
 
-## Current Status: PHASE 1A (Security Foundation) - COMPLETED
+## Current Status: PHASE 1B (Media & Email Infrastructure) - IN PROGRESS
 
-The security foundation has been laid.
-- ✅ JWT Authentication implemented (`jose`).
-- ✅ HttpOnly, Secure, SameSite=Lax cookie configured.
-- ✅ Middleware implemented protecting `/admin/*` and `/api/admin/*`.
-- ✅ `requireAdmin()` defence-in-depth implemented.
-- ✅ Origin-based CSRF protection implemented.
-- ✅ Zod runtime validation applied to all API endpoints.
-- ✅ Payload limits enforced on all API endpoints.
-- ✅ Upstash Redis rate limiting implemented across all auth and interaction endpoints.
-- ✅ Constant-time password comparison implemented.
-- ✅ API routes restructured (privileged routes moved to `/api/admin/*`).
-- ✅ Security headers (CSP, HSTS, etc.) added to `next.config.ts`.
-- ✅ `AI_CONTEXT` documentation generated.
+Phase 1B focuses on solidifying the media and email architecture before structural Schema/UI overhauls in Phase 2.
 
----
+### Phase 1A (Completed)
+- ✅ JWT Authentication & Authorization.
+- ✅ Robust security perimeters, middleware, CSRF, rate limits, Zod validation.
 
-## Next Steps: PHASE 1B (Media & Email Migration) - PENDING
-
-Before any feature development or database schema changes occur, the underlying infrastructure must be solidified.
-
-### Phase 1B Objectives:
-1. **Media Migration (Cloudflare)**
-   - Create Cloudflare Images / Stream accounts.
-   - Implement direct-upload flow to Cloudflare.
-   - Write and execute migration script to extract Base64 images from MongoDB, upload to Cloudflare, and replace with URLs in the HTML content.
-   - Remove the temporary 5 MB payload limits on API routes.
-2. **Email Overhaul (Optional, but recommended)**
-   - Replace Nodemailer/SMTP with a dedicated transactional email provider (e.g., Resend) to avoid Gmail rate limits and spam filtering.
-   - Implement asynchronous email sending (queue/background worker) so the `/api/admin/blog/create` request doesn't wait for emails to finish sending.
+### Phase 1B Objectives (Current):
+- 🔲 **Media Architecture & Storage**
+  - Implement `Media` model.
+  - Implement `/api/admin/media/auth` with distinct Cloudflare Images & Stream direct upload flows.
+- 🔲 **Base64 Migration**
+  - Standalone `cheerio`-powered Node script to extract Base64 data.
+  - Deduplication via SHA-256 checksums.
+  - Atomic, non-destructive migration state (`migratedContent`, `$set`/`$unset`).
+  - Generate comprehensive verification reports.
+- 🔲 **Email Infrastructure (Gmail + Nodemailer)**
+  - Establish `EmailService` abstraction (with `GmailProvider`).
+  - Establish `EmailLog` model to track deliveries.
+  - Implement application-level duplicate notification protection.
+  - Decouple email dispatch from DB publication via `waitUntil()` (Fire-and-forget, no queue).
+  - Implement opaque HMAC-signed unsubscribe tokens.
 
 ---
 

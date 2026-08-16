@@ -27,3 +27,8 @@
 - **Date**: 2026-08-15
 - **Decision**: Move from Base64 embedded strings to Cloudflare Images/Stream.
 - **Reason**: Base64 inflates DB size and payload size drastically. Cloudflare provides optimized delivery.
+
+### 6. Email Provider
+- **Date**: 2026-08-16
+- **Decision**: CMS v2 currently uses Gmail SMTP through Nodemailer for email delivery. The application uses an email-provider abstraction so the provider can later be replaced by Resend or another transactional email service without changing Story publication logic.
+- **Reason**: Resend is intentionally postponed because the current website does not yet require a dedicated transactional email provider or custom sending domain. Gmail + Nodemailer is sufficient for the current scale.

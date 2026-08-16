@@ -16,7 +16,7 @@ This document outlines the target architecture for CMS v2, incorporating product
 * **Database:** MongoDB Atlas (Mongoose).
 * **Media Delivery (Images):** Cloudflare Images.
 * **Media Delivery (Video):** Cloudflare Stream.
-* **Email Delivery:** Asynchronous Transactional Service (e.g., Resend).
+* **Email Delivery:** Gmail + Nodemailer (abstracted for future provider replacement).
 * **Rate Limiting / Cache:** Upstash Redis (Serverless Redis) for distributed rate-limiting across Vercel edge functions.
 * **AI Provider:** (Configurable) Anthropic/OpenAI for Translation and "Ask Tej".
 
@@ -46,7 +46,7 @@ This document outlines the target architecture for CMS v2, incorporating product
 ## 7. Email Pipeline
 1. Admin publishes a blog.
 2. Server updates MongoDB and triggers `revalidatePath`.
-3. Server drops an asynchronous job onto an external Queue/Provider (e.g., Resend/Upstash QStash).
+3. Server triggers background asynchronous execution (via `waitUntil()`) to send emails via Gmail + Nodemailer.
 4. Vercel function completes. Emails are delivered asynchronously in the background.
 
 ## 8. Rate Limiting Strategy

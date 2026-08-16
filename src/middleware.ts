@@ -6,9 +6,9 @@
  *   /api/admin/*   — privileged admin API routes
  *
  * Public routes are NOT touched:
- *   /api/blog      — public blog listing
- *   /api/blog/like — public like endpoint
- *   /api/blog/view — public view tracking
+ *   /api/story      — public story listing
+ *   /api/story/like — public like endpoint
+ *   /api/story/view — public view tracking
  *   /api/subscribe — public subscription
  *   /api/banners   — public banner media
  *   /api/unsubscribe

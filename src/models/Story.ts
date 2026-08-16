@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const BlogSchema = new mongoose.Schema(
+const StorySchema = new mongoose.Schema(
   {
     title: {
       type: String,
@@ -17,7 +17,6 @@ const BlogSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: ["tech", "fitness", "life", "motivation"],
       required: true,
     },
     tags: [
@@ -44,10 +43,19 @@ const BlogSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    status: {
+      type: String,
+      enum: ["DRAFT", "PUBLISHED", "ARCHIVED", "TRASH"],
+      default: "DRAFT",
+    }
   },
   {
     timestamps: true,
   }
 );
 
-export default mongoose.models.Blog || mongoose.model("Blog", BlogSchema);
+// Indexes for performance
+StorySchema.index({ status: 1, createdAt: -1 });
+StorySchema.index({ slug: 1 });
+
+export default mongoose.models.Story || mongoose.model("Story", StorySchema);

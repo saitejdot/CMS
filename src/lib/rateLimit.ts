@@ -44,6 +44,7 @@ const LIMITS = {
   login: { requests: 5, window: "15 m" },
   subscribe: { requests: 3, window: "1 h" },
   interact: { requests: 30, window: "1 m" },
+  adminMediaAuth: { requests: 30, window: "10 m" },
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -71,6 +72,7 @@ export const rateLimiters = {
   login: makeLimiter("login"),
   subscribe: makeLimiter("subscribe"),
   interact: makeLimiter("interact"),
+  adminMediaAuth: makeLimiter("adminMediaAuth"),
 };
 
 // ---------------------------------------------------------------------------

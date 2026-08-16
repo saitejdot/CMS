@@ -31,7 +31,7 @@ export async function GET(request: Request) {
     await connectDB();
 
     const [subscribers, count] = await Promise.all([
-      Subscriber.find().sort({ createdAt: -1 }).select("email createdAt").lean(),
+      Subscriber.find().sort({ createdAt: -1 }).select("name email createdAt").lean(),
       Subscriber.countDocuments(),
     ]);
 

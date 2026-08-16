@@ -1,12 +1,12 @@
 /**
  * POST /api/subscribe
  *
- * Public endpoint. Adds an email to the subscriber list.
+ * Public endpoint. Adds a subscriber (name + email) to the list.
  *
  * Security layers:
  *   1. Rate limiting — 3 requests / hour / IP
  *   2. Payload size limit — 1 KB
- *   3. Zod validation — valid email format, bounded length
+ *   3. Zod validation — valid email format, bounded length, name required
  *   4. DB unique index — prevents duplicate subscribers atomically
  */
 
@@ -20,6 +20,7 @@ import { generateRequestId } from "@/lib/requestId";
 const MAX_BODY_BYTES = 1024; // 1 KB
 
 const SubscribeSchema = z.object({
+  name: z.string().min(1, "Name is required").max(100),
   email: z.string().email().max(254),
 });
 
@@ -59,7 +60,7 @@ export async function POST(request: Request) {
   const parsed = SubscribeSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
-      { success: false, error: "Invalid email address" },
+      { success: false, error: "Invalid input fields" },
       { status: 400 }
     );
   }
@@ -67,7 +68,7 @@ export async function POST(request: Request) {
   // 4. Persist — DB unique index prevents duplicates atomically
   try {
     await connectDB();
-    await Subscriber.create({ email: parsed.data.email });
+    await Subscriber.create({ name: parsed.data.name, email: parsed.data.email });
     return NextResponse.json({ success: true });
   } catch (err: unknown) {
     // MongoDB duplicate key error code

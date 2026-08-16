@@ -1,7 +1,7 @@
 /**
- * POST /api/blog/view
+ * POST /api/story/view
  *
- * Public endpoint. Records a view on a blog post.
+ * Public endpoint. Records a view on a story post.
  *
  * Security layers:
  *   1. Rate limiting — 30 requests / minute / IP
@@ -12,7 +12,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { connectDB } from "@/lib/db";
-import Blog from "@/models/Blog";
+import Story from "@/models/Story";
 import { rateLimiters, getClientIP } from "@/lib/rateLimit";
 import { generateRequestId } from "@/lib/requestId";
 
@@ -70,22 +70,22 @@ export async function POST(request: Request) {
   try {
     await connectDB();
 
-    const blog = await Blog.findOne({ slug });
-    if (!blog) {
+    const story = await Story.findOne({ slug });
+    if (!story) {
       return NextResponse.json(
-        { success: false, error: "Blog not found" },
+        { success: false, error: "Story not found" },
         { status: 404 }
       );
     }
 
-    const alreadyViewed = blog.viewedBy.includes(visitorId);
+    const alreadyViewed = story.viewedBy.includes(visitorId);
     if (!alreadyViewed) {
-      blog.viewedBy.push(visitorId);
-      blog.views += 1;
-      await blog.save();
+      story.viewedBy.push(visitorId);
+      story.views += 1;
+      await story.save();
     }
 
-    return NextResponse.json({ success: true, views: blog.views });
+    return NextResponse.json({ success: true, views: story.views });
   } catch (err) {
     console.error(`[${reqId}] View failed:`, (err as Error).message);
     return NextResponse.json(

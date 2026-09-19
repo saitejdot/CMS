@@ -140,7 +140,7 @@ export default function ContactPage() {
             className="text-2xl font-bold mb-2"
             style={{ fontFamily: "var(--font-heading)" }}
           >
-            Subscribe to my blog
+            Subscribe to my story
           </h2>
           <p className="text-sm mb-6" style={{ color: "var(--muted)" }}>
             Get notified when I publish new content.

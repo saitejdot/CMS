@@ -1,6 +1,7 @@
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import AskTej from "@/components/AskTej";
 
 import { Playfair_Display, Source_Sans_3 } from "next/font/google";
 
@@ -16,10 +17,9 @@ const bodyFont = Source_Sans_3({
   variable: "--font-body",
 });
 
-
 export const metadata = {
-  title: "Naga Sai Teja Bollimuntha - Blogger, Developer, Fitness Enthusiast",
-  description: "Personal Blog CMS",
+  title: "Naga Sai Teja Bollimuntha — Developer · Writer · Builder",
+  description: "Personal website of Naga Sai Teja — stories on tech, life, fitness, and building things.",
 };
 
 export default function RootLayout({
@@ -29,18 +29,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-     
-  <body className={`${bodyFont.variable} ${headingFont.variable}`}>
-  <Navbar />
-
-  <main className="flex-1 w-full">
-    {children}
-  </main>
-
-  <Footer />
-  
-</body>
-
+      <body className={`${bodyFont.variable} ${headingFont.variable}`}>
+        <Navbar />
+        <main className="flex-1 w-full">
+          {children}
+        </main>
+        <Footer />
+        {/* Ask Tej AI — floating chat widget, globally mounted */}
+        <AskTej />
+      </body>
     </html>
   );
 }

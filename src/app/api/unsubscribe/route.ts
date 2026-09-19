@@ -1,19 +1,23 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Subscriber from "@/models/Subscriber";
+import { emailService } from "@/lib/mail";
 
 export async function GET(req: Request) {
   try {
     await connectDB();
     const { searchParams } = new URL(req.url);
-    const email = searchParams.get("email");
+    const token = searchParams.get("token");
 
-    if (!email) {
+    if (!token) {
       return new NextResponse("Invalid request", { status: 400 });
     }
 
-    // Decode email if it was encoded (though we'll use plain for now)
-    const decodedEmail = decodeURIComponent(email);
+    const decodedEmail = emailService.verifyUnsubscribeToken(token);
+    
+    if (!decodedEmail) {
+      return new NextResponse("Invalid or expired unsubscribe link", { status: 400 });
+    }
 
     await Subscriber.findOneAndDelete({ email: decodedEmail });
 
@@ -32,7 +36,7 @@ export async function GET(req: Request) {
         <body>
           <div class="card">
             <h1>Unsubscribed Successfully</h1>
-            <p>You've been removed from our mailing list. You won't receive any more notifications from Naga Sai Teja's Blog.</p>
+            <p>You've been removed from our mailing list. You won't receive any more notifications from Naga Sai Teja's Story.</p>
             <a href="/" class="btn">Back to Home</a>
           </div>
         </body>

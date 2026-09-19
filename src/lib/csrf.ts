@@ -45,9 +45,15 @@ export function checkCSRF(request: Request): NextResponse | null {
       // Direct API call with no browser context — allow (admin CLI usage)
       return null;
     }
-    // Referer present but no Origin — validate Referer host
+    // Referer present but no Origin — validate Referer host against Host header
     try {
       const refUrl = new URL(referer);
+      const host = request.headers.get("x-forwarded-host") || request.headers.get("host");
+      
+      if (host && refUrl.host === host) {
+        return null;
+      }
+      
       const allowed = getAllowedOrigins().some((o) => {
         try {
           return new URL(o).host === refUrl.host;
@@ -70,7 +76,19 @@ export function checkCSRF(request: Request): NextResponse | null {
     return null;
   }
 
-  // Origin header is present — validate against allowlist
+  // Origin header is present — validate against Host header first (automatic same-site)
+  try {
+    const originUrl = new URL(origin);
+    const host = request.headers.get("x-forwarded-host") || request.headers.get("host");
+    
+    if (host && originUrl.host === host) {
+      return null;
+    }
+  } catch {
+    // Fall back to allowlist if URL parsing fails
+  }
+
+  // Validate against allowlist
   const normalised = origin.replace(/\/$/, "");
   const allowed = getAllowedOrigins().includes(normalised);
 

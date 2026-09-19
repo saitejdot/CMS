@@ -30,7 +30,7 @@ export default function LoginPage() {
       if (data.success) {
         window.location.href = "/admin";
       } else {
-        setError("Incorrect password. Please try again.");
+        setError(data.error || "Login failed. Please try again.");
       }
     } catch (err) {
       console.error(err);

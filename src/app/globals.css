@@ -1,3 +1,10 @@
+@font-face {
+  font-family: "Kinetic Nocturne";
+  src: url("/fonts/kinetic-nocturne-regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
 /* Tailwind */
 @import "tailwindcss";
 
@@ -20,14 +27,25 @@
 .logo::after {
   content: "▋";
   animation: blink 1s infinite;
-  color: var(--text); /* auto adapts to theme */
+  color: var(--text);
+  /* auto adapts to theme */
 }
 
 /* blinking */
 @keyframes blink {
-  0%, 50%, 100% { opacity: 1; }
-  25%, 75% { opacity: 0; }
+
+  0%,
+  50%,
+  100% {
+    opacity: 1;
+  }
+
+  25%,
+  75% {
+    opacity: 0;
+  }
 }
+
 /*Font */
 
 @font-face {
@@ -36,6 +54,7 @@
   font-weight: normal;
   font-style: normal;
 }
+
 /* Color pallette*/
 /* Light mode colors*/
 :root {
@@ -56,20 +75,29 @@
 /* Dark mode colors */
 
 .dark {
-  --bg: #0b090a;        /* onyx */
-  --text: #fffef0;      /* white_smoke */
-  --card: #0a273c;      /* carbon_black */
-  --muted: #b1a7a6;     /* silver */
-  --border: #2a2a2a;    /* dust grey dark */
+  --bg: #0b090a;
+  /* onyx */
+  --text: #fffef0;
+  /* white_smoke */
+  --card: #0a273c;
+  /* carbon_black */
+  --muted: #b1a7a6;
+  /* silver */
+  --border: #2a2a2a;
+  /* dust grey dark */
 
-  --accent: #e5383b;    /* strawberry red */
-  --accent-soft: #ba181b; /* mahogany red */
-  --highlight: #a4161a;   /* deep red */
+  --accent: #e5383b;
+  /* strawberry red */
+  --accent-soft: #ba181b;
+  /* mahogany red */
+  --highlight: #a4161a;
+  /* deep red */
 }
 
 /* Global Styles */
 
-html, body {
+html,
+body {
   overflow-x: hidden;
 }
 
@@ -79,7 +107,12 @@ body {
   font-family: var(--font-body);
   transition: background-color 0.3s ease, color 0.3s ease;
 }
-h1, h2, h3, h4, h5 {
+
+h1,
+h2,
+h3,
+h4,
+h5 {
   font-family: var(--font-heading);
 }
 
@@ -87,22 +120,18 @@ h1, h2, h3, h4, h5 {
 
 /* Light mode */
 :root body {
-  background: linear-gradient(
-    to bottom,
-    #fce390 0%,
-    #fce390 60%,
-    #fce390 100%
-  );
+  background: linear-gradient(to bottom,
+      #fce390 0%,
+      #fce390 60%,
+      #fce390 100%);
 }
 
 /* Dark mode */
 .dark body {
-  background: linear-gradient(
-    to bottom,
-    #0b090a 0%,
-    #161a1d 60%,
-    #0b090a 100%
-  );
+  background: linear-gradient(to bottom,
+      #0b090a 0%,
+      #161a1d 60%,
+      #0b090a 100%);
 }
 
 /* Reusable Utilities */
@@ -147,14 +176,18 @@ select {
 
 /* LIGHT MODE */
 :root option {
-  background-color: #fedd8b;  /* paper */
-  color: #383c45;             /* slate text */
+  background-color: #fedd8b;
+  /* paper */
+  color: #383c45;
+  /* slate text */
 }
 
 /*  DARK MODE  */
 .dark option {
-  background-color: #161a1d;  /* carbon_black */
-  color: #f5f3f4;             /* white_smoke */
+  background-color: #161a1d;
+  /* carbon_black */
+  color: #f5f3f4;
+  /* white_smoke */
 }
 
 .dark select:focus {
@@ -164,6 +197,7 @@ select {
 :root select:focus {
   border-color: var(--accent);
 }
+
 /*
     PRO INPUT STYLE (THEME AWARE)*/
 
@@ -324,11 +358,25 @@ select {
 }
 
 @keyframes heartPop {
-  0% { transform: scale(1); }
-  25% { transform: scale(1.4); }
-  50% { transform: scale(0.9); }
-  75% { transform: scale(1.15); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+
+  25% {
+    transform: scale(1.4);
+  }
+
+  50% {
+    transform: scale(0.9);
+  }
+
+  75% {
+    transform: scale(1.15);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
 .like-count {
@@ -722,7 +770,7 @@ select {
   padding: 3px 0;
 }
 
-.rte-toolbar-row + .rte-toolbar-row {
+.rte-toolbar-row+.rte-toolbar-row {
   border-top: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
   margin-top: 4px;
   padding-top: 6px;
@@ -897,7 +945,8 @@ button[onclick*="remove()"] {
 .story-carousel-shell {
   position: relative;
   width: 100%;
-  aspect-ratio: 4 / 5;      /* Mobile aspect ratio */
+  aspect-ratio: 4 / 5;
+  /* Mobile aspect ratio */
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid var(--border);
@@ -905,7 +954,8 @@ button[onclick*="remove()"] {
 
 @media (min-width: 768px) {
   .story-carousel-shell {
-    aspect-ratio: 16 / 7;   /* Desktop aspect ratio */
+    aspect-ratio: 16 / 7;
+    /* Desktop aspect ratio */
   }
 }
 
@@ -933,8 +983,13 @@ button[onclick*="remove()"] {
 }
 
 @keyframes storyFill {
-  from { width: 0%; }
-  to   { width: 100%; }
+  from {
+    width: 0%;
+  }
+
+  to {
+    width: 100%;
+  }
 }
 
 /* ── Nav overlay container ── */
@@ -1035,7 +1090,7 @@ button[onclick*="remove()"] {
   border-left: 4px solid var(--accent);
   padding: 2.5rem 2rem;
   position: relative;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
 }
 
 .notebook-header {
@@ -1080,10 +1135,12 @@ button[onclick*="remove()"] {
 }
 
 .notebook-signature {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--accent);
-  font-family: var(--font-display);
+  font-size: 5.0rem;
+  font-weight: normal;
+  color: #000;
+  font-family: "Kinetic Nocturne", cursive, var(--font-display);
+  text-align: right;
+  display: block;
 }
 
 .notebook-engagement {
@@ -1108,21 +1165,77 @@ button[onclick*="remove()"] {
 }
 
 @media (max-width: 640px) {
-  .notebook-page { padding: 1.5rem 1rem; border-left-width: 3px; }
-  .notebook-title { font-size: 1.5rem; }
+  .notebook-page {
+    padding: 1.5rem 1rem;
+    border-left-width: 3px;
+  }
+
+  .notebook-title {
+    font-size: 1.5rem;
+  }
 }
 
 /* TipTap Editor */
-.tiptap-editor { min-height: 400px; padding: 1.25rem; outline: none; font-size: 1rem; line-height: 1.75; }
-.tiptap-editor h1 { font-size: 1.8rem; font-weight: 700; margin: 1rem 0 0.5rem; }
-.tiptap-editor h2 { font-size: 1.5rem; font-weight: 600; margin: 0.9rem 0 0.45rem; }
-.tiptap-editor h3 { font-size: 1.25rem; font-weight: 600; margin: 0.75rem 0 0.4rem; }
-.tiptap-editor blockquote { border-left: 4px solid var(--accent); padding: 0.5rem 1rem; margin: 1rem 0; font-style: italic; }
-.tiptap-editor ul { list-style: disc; padding-left: 1.5rem; }
-.tiptap-editor ol { list-style: decimal; padding-left: 1.5rem; }
-.tiptap-editor code { background: var(--border); padding: 0.15em 0.35em; border-radius: 4px; font-family: monospace; }
-.tiptap-editor a { color: var(--accent); text-decoration: underline; }
-.tiptap-editor img { max-width: 100%; border-radius: 6px; margin: 0.5rem 0; }
+.tiptap-editor {
+  min-height: 400px;
+  padding: 1.25rem;
+  outline: none;
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.tiptap-editor h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 1rem 0 0.5rem;
+}
+
+.tiptap-editor h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0.9rem 0 0.45rem;
+}
+
+.tiptap-editor h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0.75rem 0 0.4rem;
+}
+
+.tiptap-editor blockquote {
+  border-left: 4px solid var(--accent);
+  padding: 0.5rem 1rem;
+  margin: 1rem 0;
+  font-style: italic;
+}
+
+.tiptap-editor ul {
+  list-style: disc;
+  padding-left: 1.5rem;
+}
+
+.tiptap-editor ol {
+  list-style: decimal;
+  padding-left: 1.5rem;
+}
+
+.tiptap-editor code {
+  background: var(--border);
+  padding: 0.15em 0.35em;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+.tiptap-editor a {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.tiptap-editor img {
+  max-width: 100%;
+  border-radius: 6px;
+  margin: 0.5rem 0;
+}
 
 /* =========================
    ?? ASK TEJ CHAT WIDGET
@@ -1143,13 +1256,13 @@ button[onclick*="remove()"] {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 18px rgba(0,0,0,0.22);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.22);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .ask-tej-fab:hover {
   transform: scale(1.08);
-  box-shadow: 0 6px 24px rgba(0,0,0,0.28);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.28);
 }
 
 .ask-tej-window {
@@ -1162,7 +1275,7 @@ button[onclick*="remove()"] {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 16px;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.18);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -1170,8 +1283,15 @@ button[onclick*="remove()"] {
 }
 
 @keyframes askTejSlideIn {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .ask-tej-header {
@@ -1280,12 +1400,27 @@ button[onclick*="remove()"] {
   animation: askTejDot 1.2s infinite ease-in-out;
 }
 
-.ask-tej-typing span:nth-child(2) { animation-delay: 0.2s; }
-.ask-tej-typing span:nth-child(3) { animation-delay: 0.4s; }
+.ask-tej-typing span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.ask-tej-typing span:nth-child(3) {
+  animation-delay: 0.4s;
+}
 
 @keyframes askTejDot {
-  0%, 80%, 100% { transform: scale(1); opacity: 0.5; }
-  40%           { transform: scale(1.3); opacity: 1; }
+
+  0%,
+  80%,
+  100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+
+  40% {
+    transform: scale(1.3);
+    opacity: 1;
+  }
 }
 
 .ask-tej-input-row {

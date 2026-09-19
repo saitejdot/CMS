@@ -7,6 +7,7 @@
  * Supported providers:
  *   - openai  (requires OPENAI_API_KEY)
  *   - anthropic (requires ANTHROPIC_API_KEY)
+ *   - groq   (requires GROQ_API_KEY — OpenAI-compatible endpoint)
  *   - mock   (no API key, returns deterministic responses — for testing)
  *
  * Both ChatProvider and TranslationProvider are server-side only.
@@ -102,6 +103,92 @@ RULES (strictly follow):
     if (!res.ok) {
       const text = await res.text();
       throw new Error(`OpenAI Translation API error: ${res.status} ${text}`);
+    }
+
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content ?? content;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Groq Provider (OpenAI-compatible API)
+// ---------------------------------------------------------------------------
+
+const GROQ_CHAT_MODEL = "llama-3.1-8b-instant";
+const GROQ_TRANSLATION_MODEL = "llama-3.1-8b-instant";
+
+class GroqChatProvider implements ChatProvider {
+  private apiKey: string;
+
+  constructor(apiKey: string) {
+    this.apiKey = apiKey;
+  }
+
+  async chat(messages: ChatMessage[], systemPrompt: string): Promise<string> {
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${this.apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: GROQ_CHAT_MODEL,
+        max_tokens: 600,
+        messages: [
+          { role: "system", content: systemPrompt },
+          ...messages,
+        ],
+      }),
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Groq API error: ${res.status} ${text}`);
+    }
+
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content ?? "";
+  }
+}
+
+class GroqTranslationProvider implements TranslationProvider {
+  private apiKey: string;
+
+  constructor(apiKey: string) {
+    this.apiKey = apiKey;
+  }
+
+  async translate(content: string, targetLanguage: string): Promise<string> {
+    const systemPrompt = `You are a precise, faithful translator.
+Translate the following HTML content from English to ${targetLanguage}.
+
+RULES (strictly follow):
+- Translate ONLY the visible text — do NOT modify any HTML tags, attributes, class names, or structure.
+- Preserve all headings, paragraphs, lists, links, emphasis, and code blocks exactly.
+- Do NOT summarize, rewrite, embellish, add, or remove any content.
+- Translate the LANGUAGE of the text only — preserve meaning, order, and author's voice.
+- Technical terms, proper nouns, names, and numbers must remain unchanged.
+- Return only the translated HTML. No preamble, no explanation.`;
+
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${this.apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: GROQ_TRANSLATION_MODEL,
+        max_tokens: 4000,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content },
+        ],
+      }),
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Groq Translation API error: ${res.status} ${text}`);
     }
 
     const data = await res.json();
@@ -219,6 +306,10 @@ export function getChatProvider(): ChatProvider {
     const key = process.env.ANTHROPIC_API_KEY;
     if (!key) throw new Error("ANTHROPIC_API_KEY is required when AI_PROVIDER=anthropic");
     _chat = new AnthropicChatProvider(key);
+  } else if (provider === "groq") {
+    const key = process.env.GROQ_API_KEY;
+    if (!key) throw new Error("GROQ_API_KEY is required when AI_PROVIDER=groq");
+    _chat = new GroqChatProvider(key);
   } else {
     _chat = new MockChatProvider();
   }

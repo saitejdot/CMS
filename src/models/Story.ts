@@ -51,6 +51,7 @@ const StorySchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    collection: "blogs",
   }
 );
 

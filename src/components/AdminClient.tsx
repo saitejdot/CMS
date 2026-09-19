@@ -94,6 +94,7 @@ export default function AdminClient() {
   const [storyTags, setStoryTags] = useState("");
   const [storyStatus, setStoryStatus] = useState("DRAFT");
   const [storyContent, setStoryContent] = useState("");
+  const [sendEmailNotification, setSendEmailNotification] = useState(true);
   const [editingStory, setEditingStory] = useState<Story | null>(null);
 
   // Projects
@@ -204,9 +205,10 @@ export default function AdminClient() {
         category: storyCategory, status: storyStatus,
         tags: storyTags.split(",").map((t) => t.trim()).filter(Boolean),
         coverImage: "",
+        sendEmail: sendEmailNotification,
       }),
     });
-    setStoryTitle(""); setStorySlug(""); setStoryContent(""); setStoryTags("");
+    setStoryTitle(""); setStorySlug(""); setStoryContent(""); setStoryTags(""); setSendEmailNotification(true);
     fetchStories();
   };
 
@@ -364,6 +366,12 @@ export default function AdminClient() {
                 {["DRAFT", "PUBLISHED", "ARCHIVED", "TRASH"].map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
               <input placeholder="Tags (comma separated)" value={storyTags} onChange={(e) => setStoryTags(e.target.value)} className="admin-input" style={{ flex: 1 }} />
+            </div>
+            <div className="admin-row" style={{ marginBottom: "1rem" }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.85rem", cursor: "pointer", color: "var(--text)" }}>
+                <input type="checkbox" checked={sendEmailNotification} onChange={(e) => setSendEmailNotification(e.target.checked)} />
+                Send email notification to subscribers
+              </label>
             </div>
             <TipTapEditor value={storyContent} onChange={setStoryContent} />
             <button onClick={handleCreateStory} className="admin-create-btn">Create Story</button>

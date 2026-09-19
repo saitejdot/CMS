@@ -45,13 +45,17 @@ export async function POST(request: Request) {
 
   // 2. Rate limiting
   const ip = getClientIP(request);
-  const rateResult = await rateLimiters.login.limit(ip);
-  if (!rateResult.success) {
-    console.warn(`[${reqId}] Login rate limit exceeded for IP: ${ip}`);
-    return NextResponse.json(
-      { success: false, error: "Too many login attempts. Try again later." },
-      { status: 429 }
-    );
+  try {
+    const rateResult = await rateLimiters.login.limit(ip);
+    if (!rateResult.success) {
+      console.warn(`[${reqId}] Login rate limit exceeded for IP: ${ip}`);
+      return NextResponse.json(
+        { success: false, error: "Too many login attempts. Try again later." },
+        { status: 429 }
+      );
+    }
+  } catch (error) {
+    console.warn(`[${reqId}] Rate limiter failed (Redis unreachable?), bypassing rate limit for IP: ${ip}`, error);
   }
 
   // 3. Parse and validate body

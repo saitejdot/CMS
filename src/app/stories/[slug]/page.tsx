@@ -112,7 +112,7 @@ export default async function StoryPage({ params }: Props) {
             <p className="notebook-thanks">
               Thank you for reading. If this resonated with you, share it with someone who needs it.
             </p>
-            <p className="notebook-signature">— Tej</p>
+            <p className="notebook-signature"> - Saitej. </p>
           </div>
 
           {/* ENGAGEMENT */}

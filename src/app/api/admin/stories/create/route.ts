@@ -40,6 +40,7 @@ const CreateStorySchema = z.object({
   status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED", "TRASH"]).default("DRAFT"),
   tags: z.array(z.string().max(50)).max(10).optional(),
   coverImage: z.string().max(2000).optional(),
+  sendEmail: z.boolean().optional().default(true),
 });
 
 export async function POST(request: Request) {
@@ -83,7 +84,7 @@ export async function POST(request: Request) {
 
   try {
     await connectDB();
-    const { title, slug: rawSlug, content, category, status, tags, coverImage } = parsed.data;
+    const { title, slug: rawSlug, content, category, status, tags, coverImage, sendEmail } = parsed.data;
 
     const slug = rawSlug || title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
 
@@ -92,9 +93,11 @@ export async function POST(request: Request) {
     });
 
     // Email notifications — fire and forget via Next.js `after`
-    after(async () => {
-      await notifySubscribers(newStory._id.toString(), title, slug, category, reqId);
-    });
+    if (sendEmail) {
+      after(async () => {
+        await notifySubscribers(newStory._id.toString(), title, slug, category, reqId);
+      });
+    }
 
     return NextResponse.json({ success: true, data: newStory });
   } catch (err) {

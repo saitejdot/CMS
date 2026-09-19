@@ -116,9 +116,10 @@ export async function POST(request: Request) {
     response.cookies.set(COOKIE_NAME, token, buildAuthCookieOptions());
     return response;
   } catch (err) {
-    console.error(`[${reqId}] JWT signing failed:`, (err as Error).message);
+    const errMsg = err instanceof Error ? err.message : "Unknown error";
+    console.error(`[${reqId}] JWT signing failed:`, errMsg);
     return NextResponse.json(
-      { success: false, error: "Server error" },
+      { success: false, error: `Server error: ${errMsg}` },
       { status: 500 }
     );
   }

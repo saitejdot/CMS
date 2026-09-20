@@ -15,8 +15,8 @@ export default async function Home() {
 
   try {
     await connectDB();
-    // Get latest 3 stories directly from DB
-    stories = await Story.find().sort({ createdAt: -1 }).limit(3).lean();
+    // Get latest 3 published stories directly from DB
+    stories = await Story.find({ status: "PUBLISHED" }).sort({ createdAt: -1 }).limit(3).lean();
     subscriberCount = await Subscriber.countDocuments();
   } catch (error) {
     console.error("Home page DB error:", error);
@@ -109,7 +109,7 @@ export default async function Home() {
               {stories.length > 0 ? (
                 stories.map((story) => (
                   <div key={story._id} className="card p-4 shadow-sm">
-                    <Link href={`/story/${story.slug}`}>
+                    <Link href={`/stories/${story.slug}`}>
                       <h3 className="text-lg font-semibold text-accent hover:underline">
                         {story.title}
                       </h3>

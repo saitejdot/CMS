@@ -7,6 +7,33 @@ interface Message {
   content: string;
 }
 
+function parseRetryAfterSeconds(errorMessage: string): number | null {
+  const match = errorMessage.match(/try again in\s+([0-9hms\.\s]+(?:s|m|h))/i);
+  if (!match) return null;
+  const timeStr = match[1];
+
+  let totalSeconds = 0;
+  const hMatch = timeStr.match(/(\d+)\s*h/i);
+  const mMatch = timeStr.match(/(\d+)\s*m/i);
+  const sMatch = timeStr.match(/(\d+(?:\.\d+)?)\s*s/i);
+
+  if (hMatch) totalSeconds += parseInt(hMatch[1], 10) * 3600;
+  if (mMatch) totalSeconds += parseInt(mMatch[1], 10) * 60;
+  if (sMatch) totalSeconds += Math.ceil(parseFloat(sMatch[1]));
+
+  return totalSeconds > 0 ? totalSeconds : null;
+}
+
+function formatTime(seconds: number): string {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+
+  if (h > 0) return `${h}h ${m}m ${s}s`;
+  if (m > 0) return `${m}m ${s}s`;
+  return `${s}s`;
+}
+
 export default function AskTej() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -40,14 +67,36 @@ export default function AskTej() {
         }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
 
-      if (data.success) {
+      if (res.ok && data?.success) {
         setMessages([...newMessages, { role: "assistant", content: data.reply }]);
       } else {
-        setMessages([...newMessages, { role: "assistant", content: "Sorry, something went wrong. Please try again." }]);
+        const serverError = data?.error || `Request failed (${res.status}). Please try again.`;
+
+        // Developer logging: Output full raw error to browser console
+        console.error("[Chat API Error - Developer Console]:", {
+          status: res.status,
+          statusText: res.statusText,
+          errorData: data,
+          fullError: serverError,
+        });
+
+        // Parse retry duration for friendly user display
+        const parsedSeconds = parseRetryAfterSeconds(serverError);
+        let userMessage = "";
+        if (parsedSeconds) {
+          userMessage = `Rate limit reached. Please try after ${formatTime(parsedSeconds)}.`;
+        } else if (res.status === 429 || serverError.toLowerCase().includes("rate limit")) {
+          userMessage = "Rate limit reached. Please try again after a few minutes.";
+        } else {
+          userMessage = "Sorry, something went wrong. Please try again.";
+        }
+
+        setMessages([...newMessages, { role: "assistant", content: userMessage }]);
       }
-    } catch {
+    } catch (err) {
+      console.error("[Chat Component Exception]:", err);
       setMessages([...newMessages, { role: "assistant", content: "Network error. Please check your connection." }]);
     } finally {
       setLoading(false);

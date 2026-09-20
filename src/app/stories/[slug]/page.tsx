@@ -13,11 +13,17 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
+import { cookies } from "next/headers";
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     await connectDB();
-    const { slug } = await params;
-    const story = await Story.findOne({ slug, status: "PUBLISHED" }).lean() as { title: string; content: string } | null;
+    const { slug: rawSlug } = await params;
+    const slug = decodeURIComponent(rawSlug);
+    const story = await Story.findOne({
+      slug: { $regex: new RegExp(`^${slug.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") },
+      status: "PUBLISHED",
+    }).lean() as { title: string; content: string } | null;
     if (!story) return { title: "Story Not Found" };
     const description = (story.content ?? "").replace(/<[^>]*>/g, "").slice(0, 160);
     return {
@@ -43,14 +49,24 @@ function calcReadingTime(html: string): string {
 
 export default async function StoryPage({ params }: Props) {
   await connectDB();
-  const { slug } = await params;
+  const { slug: rawSlug } = await params;
+  const slug = decodeURIComponent(rawSlug);
 
-  const story = await Story.findOne({ slug, status: "PUBLISHED" }).lean() as {
+  const cookieStore = await cookies();
+  const isAdmin = Boolean(cookieStore.get("admin_token")?.value);
+
+  const slugRegex = new RegExp(`^${slug.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i");
+  const query = isAdmin
+    ? { slug: slugRegex }
+    : { slug: slugRegex, status: "PUBLISHED" };
+
+  const story = await Story.findOne(query).lean() as {
     _id: string;
     title: string;
     slug: string;
     content: string;
     category: string;
+    status: string;
     tags?: string[];
     coverImage?: string;
     likes: number;

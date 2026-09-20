@@ -116,29 +116,33 @@ const SYSTEM_SUFFIX = `
 export async function POST(request: Request) {
   const reqId = generateRequestId();
 
-  // 1. Rate limiting
-  const ip = getClientIP(request);
-  const rl = await rateLimiters.interact.limit(ip);
-  if (!rl.success) {
-    return NextResponse.json({ success: false, error: "Too many requests" }, { status: 429 });
-  }
-
-  // 2. Parse and validate
-  let body: unknown;
   try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ success: false, error: "Invalid request body" }, { status: 400 });
-  }
+    // 1. Rate limiting
+    try {
+      const ip = getClientIP(request);
+      const rl = await rateLimiters.interact.limit(ip);
+      if (!rl.success) {
+        return NextResponse.json({ success: false, error: "Too many requests. Please wait a minute." }, { status: 429 });
+      }
+    } catch (rlErr) {
+      console.warn(`[${reqId}] Chat rate limiter warning (degraded mode):`, (rlErr as Error).message);
+    }
 
-  const parsed = ChatSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json({ success: false, error: "Invalid input" }, { status: 400 });
-  }
+    // 2. Parse and validate
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ success: false, error: "Invalid request body" }, { status: 400 });
+    }
 
-  const { message, history } = parsed.data;
+    const parsed = ChatSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ success: false, error: "Invalid input" }, { status: 400 });
+    }
 
-  try {
+    const { message, history } = parsed.data;
+
     // 3. Build server-side knowledge base
     const knowledgeBase = await buildKnowledgeBase();
     const systemPrompt = knowledgeBase + SYSTEM_SUFFIX;
@@ -157,9 +161,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, reply });
   } catch (err) {
-    console.error(`[${reqId}] Chat error:`, (err as Error).message);
+    const errorMsg = (err as Error).message || "Something went wrong. Please try again.";
+    console.error(`[${reqId}] Chat error:`, errorMsg);
     return NextResponse.json(
-      { success: false, error: "Something went wrong. Please try again." },
+      { success: false, error: errorMsg },
       { status: 500 }
     );
   }

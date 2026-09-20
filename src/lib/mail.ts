@@ -132,7 +132,7 @@ export async function notifySubscribers(blogId: string, title: string, slug: str
     }
     
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://tejwrites.vercel.app";
-    const blogUrl = `${baseUrl}/story/${slug}`;
+    const blogUrl = `${baseUrl}/stories/${slug}`;
     
     const subscribers = await Subscriber.find().select("email").lean();
     let sentCount = 0;

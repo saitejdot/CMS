@@ -46,7 +46,7 @@ export default function LikeButton({
       setTimeout(() => setAnimating(false), 600);
     }
 
-    const res = await fetch("/api/story/like", {
+    const res = await fetch("/api/stories/like", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ slug, visitorId }),

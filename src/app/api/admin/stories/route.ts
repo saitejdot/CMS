@@ -14,7 +14,7 @@ export async function GET(req: Request) {
     await connectDB();
     const stories = await Story.find()
       .sort({ createdAt: -1 })
-      .select("_id title slug category status likes views tags createdAt")
+      .select("_id title slug category status likes views tags content createdAt")
       .lean();
 
     return NextResponse.json({ success: true, data: stories });

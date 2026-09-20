@@ -214,17 +214,30 @@ export default function AdminClient() {
 
   const handleUpdateStory = async () => {
     if (!editingStory || !editingStory.title.trim()) return;
-    await fetch("/api/admin/stories/update", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        _id: editingStory._id, title: editingStory.title, content: editingStory.content,
-        category: editingStory.category, status: editingStory.status,
-        tags: editingStory.tags,
-      }),
-    });
-    setEditingStory(null);
-    fetchStories();
+    try {
+      const res = await fetch("/api/admin/stories/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          _id: editingStory._id,
+          title: editingStory.title,
+          content: editingStory.content ?? "",
+          category: editingStory.category,
+          status: editingStory.status,
+          tags: Array.isArray(editingStory.tags) ? editingStory.tags : [],
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        alert("Failed to update story: " + (data.error || "Unknown error"));
+        return;
+      }
+      setEditingStory(null);
+      fetchStories();
+    } catch (err) {
+      console.error(err);
+      alert("Error updating story");
+    }
   };
 
   const handleDeleteStory = async (id: string) => {

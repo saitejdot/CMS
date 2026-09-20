@@ -114,8 +114,8 @@ RULES (strictly follow):
 // Groq Provider (OpenAI-compatible API)
 // ---------------------------------------------------------------------------
 
-const GROQ_CHAT_MODEL = "llama-3.1-8b-instant";
-const GROQ_TRANSLATION_MODEL = "llama-3.1-8b-instant";
+const GROQ_CHAT_MODEL = process.env.GROQ_CHAT_MODEL || "groq/compound-mini";
+const GROQ_TRANSLATION_MODEL = process.env.GROQ_TRANSLATION_MODEL || "groq/compound-mini";
 
 class GroqChatProvider implements ChatProvider {
   private apiKey: string;
@@ -125,25 +125,40 @@ class GroqChatProvider implements ChatProvider {
   }
 
   async chat(messages: ChatMessage[], systemPrompt: string): Promise<string> {
-    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${this.apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: GROQ_CHAT_MODEL,
-        max_tokens: 600,
-        messages: [
-          { role: "system", content: systemPrompt },
-          ...messages,
-        ],
-      }),
-    });
+    let res: Response | null = null;
+    let text = "";
 
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`Groq API error: ${res.status} ${text}`);
+    for (let attempt = 0; attempt < 3; attempt++) {
+      if (attempt > 0) {
+        await new Promise((r) => setTimeout(r, attempt * 2000));
+      }
+
+      res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${this.apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: GROQ_CHAT_MODEL,
+          max_tokens: 600,
+          messages: [
+            { role: "system", content: systemPrompt },
+            ...messages,
+          ],
+        }),
+      });
+
+      if (res.status === 429 || res.status === 413) {
+        continue;
+      }
+
+      break;
+    }
+
+    if (!res || !res.ok) {
+      text = res ? await res.text() : "No response";
+      throw new Error(`Groq API error: ${res?.status ?? 500} ${text}`);
     }
 
     const data = await res.json();
@@ -158,7 +173,29 @@ class GroqTranslationProvider implements TranslationProvider {
     this.apiKey = apiKey;
   }
 
+  private splitHtmlChunks(html: string, maxChunkSize = 5000): string[] {
+    if (html.length <= maxChunkSize) return [html];
+
+    const chunks: string[] = [];
+    const parts = html.split(/(?<=(?:<\/p>|<\/div>|<\/h[1-6]>|<\/ul>|<\/ol>|<\/section>|<\/article>|<br\s*\/?>))\s*/gi);
+
+    let currentChunk = "";
+    for (const part of parts) {
+      if ((currentChunk + part).length > maxChunkSize && currentChunk.length > 0) {
+        chunks.push(currentChunk);
+        currentChunk = part;
+      } else {
+        currentChunk += part;
+      }
+    }
+    if (currentChunk) chunks.push(currentChunk);
+    return chunks;
+  }
+
   async translate(content: string, targetLanguage: string): Promise<string> {
+    const chunks = this.splitHtmlChunks(content, 5000);
+    const translatedChunks: string[] = [];
+
     const systemPrompt = `You are a precise, faithful translator.
 Translate the following HTML content from English to ${targetLanguage}.
 
@@ -170,29 +207,48 @@ RULES (strictly follow):
 - Technical terms, proper nouns, names, and numbers must remain unchanged.
 - Return only the translated HTML. No preamble, no explanation.`;
 
-    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${this.apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: GROQ_TRANSLATION_MODEL,
-        max_tokens: 4000,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content },
-        ],
-      }),
-    });
+    for (const chunk of chunks) {
+      let res: Response | null = null;
+      let text = "";
 
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`Groq Translation API error: ${res.status} ${text}`);
+      for (let attempt = 0; attempt < 5; attempt++) {
+        if (attempt > 0) {
+          await new Promise((r) => setTimeout(r, attempt * 3000));
+        }
+
+        res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${this.apiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: GROQ_TRANSLATION_MODEL,
+            max_tokens: 4000,
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: chunk },
+            ],
+          }),
+        });
+
+        if (res.status === 429 || res.status === 413) {
+          continue;
+        }
+
+        break;
+      }
+
+      if (!res || !res.ok) {
+        text = res ? await res.text() : "No response";
+        throw new Error(`Groq Translation API error: ${res?.status ?? 500} ${text}`);
+      }
+
+      const data = await res.json();
+      translatedChunks.push(data.choices?.[0]?.message?.content ?? chunk);
     }
 
-    const data = await res.json();
-    return data.choices?.[0]?.message?.content ?? content;
+    return translatedChunks.join("\n");
   }
 }
 
@@ -330,6 +386,10 @@ export function getTranslationProvider(): TranslationProvider {
     const key = process.env.ANTHROPIC_API_KEY;
     if (!key) throw new Error("ANTHROPIC_API_KEY is required when AI_PROVIDER=anthropic");
     _translation = new AnthropicTranslationProvider(key);
+  } else if (provider === "groq") {
+    const key = process.env.GROQ_API_KEY;
+    if (!key) throw new Error("GROQ_API_KEY is required when AI_PROVIDER=groq");
+    _translation = new GroqTranslationProvider(key);
   } else {
     _translation = new MockTranslationProvider();
   }

@@ -36,36 +36,40 @@ const TranslateSchema = z.object({
 export async function POST(request: Request) {
   const reqId = generateRequestId();
 
-  // 1. Rate limiting
-  const ip = getClientIP(request);
-  const rl = await rateLimiters.interact.limit(ip);
-  if (!rl.success) {
-    return NextResponse.json({ success: false, error: "Too many requests" }, { status: 429 });
-  }
-
-  // 2. Parse and validate
-  let body: unknown;
   try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ success: false, error: "Invalid request body" }, { status: 400 });
-  }
+    // 1. Rate limiting
+    try {
+      const ip = getClientIP(request);
+      const rl = await rateLimiters.interact.limit(ip);
+      if (!rl.success) {
+        return NextResponse.json({ success: false, error: "Too many requests. Please wait a minute." }, { status: 429 });
+      }
+    } catch (rlErr) {
+      console.warn(`[${reqId}] Rate limiter warning (degraded mode):`, (rlErr as Error).message);
+    }
 
-  const parsed = TranslateSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json({ success: false, error: "Invalid input" }, { status: 400 });
-  }
+    // 2. Parse and validate
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ success: false, error: "Invalid request body" }, { status: 400 });
+    }
 
-  const { slug, language } = parsed.data;
+    const parsed = TranslateSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ success: false, error: "Invalid input parameters" }, { status: 400 });
+    }
 
-  try {
+    const { slug, language } = parsed.data;
+
     await connectDB();
 
     // 3. Fetch the PUBLISHED story
     const story = await Story.findOne({ slug, status: "PUBLISHED" }).select("_id content").lean() as { _id: string; content: string } | null;
 
     if (!story) {
-      return NextResponse.json({ success: false, error: "Story not found" }, { status: 404 });
+      return NextResponse.json({ success: false, error: "Story not found or not published" }, { status: 404 });
     }
 
     // 4. Check cache
@@ -89,9 +93,10 @@ export async function POST(request: Request) {
     console.log(`[${reqId}] Translation completed: ${slug} → ${language}`);
     return NextResponse.json({ success: true, content: translated, cached: false });
   } catch (err) {
-    console.error(`[${reqId}] Translation error:`, (err as Error).message);
+    const errorMsg = (err as Error).message || "Translation failed. Please try again.";
+    console.error(`[${reqId}] Translation error:`, errorMsg);
     return NextResponse.json(
-      { success: false, error: "Translation failed. Please try again." },
+      { success: false, error: errorMsg },
       { status: 500 }
     );
   }

@@ -27,11 +27,11 @@ const CATEGORIES = ["Tech", "Life", "Fitness", "Motivation", "Thoughts", "Philos
 
 const UpdateStorySchema = z.object({
   _id: z.string().length(24, "Invalid story ID"),
-  title: z.string().min(1).max(200),
-  content: z.string().min(1).max(5_000_000),
-  category: z.enum(CATEGORIES),
+  title: z.string().min(1).max(200).optional(),
+  content: z.string().min(1).max(5_000_000).optional(),
+  category: z.enum(CATEGORIES).optional(),
   status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED", "TRASH"]).optional(),
-  tags: z.array(z.string().max(50)).max(10).optional(),
+  tags: z.array(z.string().max(50)).max(10).optional().nullable(),
 });
 
 export async function POST(request: Request) {
@@ -72,10 +72,15 @@ export async function POST(request: Request) {
   try {
     await connectDB();
 
-    const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
-
-    const updateData: Record<string, unknown> = { title, slug, content, category, tags };
-    if (status) updateData.status = status;
+    const updateData: Record<string, unknown> = {};
+    if (title !== undefined) {
+      updateData.title = title;
+      updateData.slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
+    }
+    if (content !== undefined) updateData.content = content;
+    if (category !== undefined) updateData.category = category;
+    if (status !== undefined) updateData.status = status;
+    if (tags !== undefined) updateData.tags = tags ?? [];
 
     const updated = await Story.findByIdAndUpdate(_id, updateData, { new: true });
 

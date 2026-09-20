@@ -19,7 +19,9 @@ export default function TipTapEditor({ value, onChange }: TipTapEditorProps) {
 
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        link: false,
+      }),
       Image,
       Youtube,
       Link.configure({

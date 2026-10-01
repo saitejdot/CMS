@@ -20,54 +20,58 @@ export default function LikeButton({
   initialLikes: number;
 }) {
   const [likes, setLikes] = useState(initialLikes);
-  const [liked, setLiked] = useState(false);
+  // Red heart = user has ever clicked like on this post on this browser
+  const [hasLiked, setHasLiked] = useState(false);
   const [animating, setAnimating] = useState(false);
 
+  // Restore heart colour from localStorage on mount
   useEffect(() => {
-    const likedPosts = JSON.parse(
-      localStorage.getItem("cms_liked_posts") || "[]"
-    );
-    if (likedPosts.includes(slug)) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setLiked(true);
-    }
+    const likedPosts = JSON.parse(localStorage.getItem("cms_liked_posts") || "[]");
+    if (likedPosts.includes(slug)) setHasLiked(true);
   }, [slug]);
 
-  const handleToggleLike = async () => {
+  const handleLike = async () => {
     const visitorId = getVisitorId();
 
-    // Optimistic UI update
+    // Optimistic update
     setLikes((prev) => prev + 1);
-
+    setHasLiked(true);
     setAnimating(true);
     setTimeout(() => setAnimating(false), 600);
 
-    const res = await fetch("/api/stories/like", {
+    // Persist red heart in localStorage
+    const likedPosts: string[] = JSON.parse(localStorage.getItem("cms_liked_posts") || "[]");
+    if (!likedPosts.includes(slug)) {
+      likedPosts.push(slug);
+      localStorage.setItem("cms_liked_posts", JSON.stringify(likedPosts));
+    }
+
+    // Fire-and-forget to server
+    fetch("/api/stories/like", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ slug, visitorId }),
-    });
-
-    const data = await res.json();
-
-    if (data.success) {
-      setLikes(data.likes);
-    }
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) setLikes(data.likes);
+      })
+      .catch(() => {});
   };
 
   return (
     <button
-      onClick={handleToggleLike}
-      className={`like-button ${liked ? "liked" : ""} ${animating ? "like-pop" : ""}`}
-      aria-label={liked ? "Unlike this post" : "Like this post"}
+      onClick={handleLike}
+      className={`like-button ${hasLiked ? "liked" : ""} ${animating ? "like-pop" : ""}`}
+      aria-label="Like this post"
     >
       <svg
         viewBox="0 0 24 24"
         width="22"
         height="22"
         className="like-heart-icon"
-        fill={liked ? "#e5383b" : "none"}
-        stroke={liked ? "#e5383b" : "currentColor"}
+        fill={hasLiked ? "#e5383b" : "none"}
+        stroke={hasLiked ? "#e5383b" : "currentColor"}
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"

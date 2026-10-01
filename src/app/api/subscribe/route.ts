@@ -41,7 +41,7 @@ export async function POST(request: Request) {
   const rateResult = await rateLimiters.subscribe.limit(ip);
   if (!rateResult.success) {
     return NextResponse.json(
-      { success: false, error: "Too many requests. Please try again later." },
+      { success: false, error: "rate_limited", message: "Too many attempts. Please try again in an hour." },
       { status: 429 }
     );
   }

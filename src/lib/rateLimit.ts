@@ -4,75 +4,88 @@
  * All limits are defined in ONE place. Changing a limit requires editing
  * only this file — no changes to individual route handlers.
  *
- * Usage in a route handler:
- *   const ip = getClientIP(request);
- *   const result = await rateLimiters.login.limit(ip);
- *   if (!result.success) {
- *     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
- *   }
- *
- * Upstash Redis is used because Vercel functions are stateless — process-memory
- * maps reset on every cold start and do not share state across instances or
- * regions. Upstash provides a serverless-compatible persistent store.
+ * If UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN are not set,
+ * rate limiting is SKIPPED gracefully — the endpoints still work.
+ * This prevents a missing env var from silently breaking views/likes.
  */
 
 import { Redis } from "@upstash/redis";
 import { Ratelimit } from "@upstash/ratelimit";
 
 // ---------------------------------------------------------------------------
-// Redis client (singleton pattern compatible with serverless)
+// Redis client (singleton, optional)
 // ---------------------------------------------------------------------------
 
-function getRedis(): Redis {
+let _redis: Redis | null = null;
+let _redisChecked = false;
+
+function getRedis(): Redis | null {
+  if (_redisChecked) return _redis;
+  _redisChecked = true;
+
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
 
   if (!url || !token) {
-    throw new Error(
-      "UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN must be set"
-    );
+    console.warn("[rateLimit] Upstash env vars not set — rate limiting disabled.");
+    return null;
   }
 
-  return new Redis({ url, token });
+  _redis = new Redis({ url, token });
+  return _redis;
 }
 
 // ---------------------------------------------------------------------------
-// Rate limit definitions — edit here to change limits
+// Rate limit definitions
 // ---------------------------------------------------------------------------
 
 const LIMITS = {
-  login: { requests: 5, window: "15 m" },
-  subscribe: { requests: 3, window: "1 h" },
-  interact: { requests: 30, window: "1 m" },
+  login:          { requests: 5,  window: "15 m" },
+  subscribe:      { requests: 3,  window: "1 h"  },
+  interact:       { requests: 30, window: "1 m"  },
   adminMediaAuth: { requests: 30, window: "10 m" },
 } as const;
 
 // ---------------------------------------------------------------------------
-// Lazily-initialised limiters (avoids instantiating Redis on import)
+// Mock limiter — returned when Redis is unavailable
+// Always allows requests through (no enforcement).
 // ---------------------------------------------------------------------------
 
-let _redis: Redis | null = null;
+const MOCK_LIMITER = {
+  limit: async (_id: string) => ({ success: true, limit: 999, remaining: 999, reset: 0 }),
+};
 
-function redis(): Redis {
-  if (!_redis) _redis = getRedis();
-  return _redis;
+// ---------------------------------------------------------------------------
+// Lazily-initialised real limiters
+// ---------------------------------------------------------------------------
+
+const _limiters: Partial<Record<keyof typeof LIMITS, Ratelimit>> = {};
+
+function getLimiter(key: keyof typeof LIMITS): { limit: (id: string) => Promise<{ success: boolean }> } {
+  const redis = getRedis();
+  if (!redis) return MOCK_LIMITER;
+
+  if (!_limiters[key]) {
+    const { requests, window } = LIMITS[key];
+    _limiters[key] = new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(requests, window),
+      prefix: `cms:rl:${key}`,
+    });
+  }
+
+  return _limiters[key]!;
 }
 
-function makeLimiter(key: keyof typeof LIMITS): Ratelimit {
-  const { requests, window } = LIMITS[key];
-  return new Ratelimit({
-    redis: redis(),
-    limiter: Ratelimit.slidingWindow(requests, window),
-    prefix: `cms:rl:${key}`,
-  });
-}
+// ---------------------------------------------------------------------------
+// Exported rate limiters — same API as before
+// ---------------------------------------------------------------------------
 
-// Exported limiters — one per endpoint group
 export const rateLimiters = {
-  login: makeLimiter("login"),
-  subscribe: makeLimiter("subscribe"),
-  interact: makeLimiter("interact"),
-  adminMediaAuth: makeLimiter("adminMediaAuth"),
+  login:          { limit: (id: string) => getLimiter("login").limit(id) },
+  subscribe:      { limit: (id: string) => getLimiter("subscribe").limit(id) },
+  interact:       { limit: (id: string) => getLimiter("interact").limit(id) },
+  adminMediaAuth: { limit: (id: string) => getLimiter("adminMediaAuth").limit(id) },
 };
 
 // ---------------------------------------------------------------------------
@@ -80,11 +93,9 @@ export const rateLimiters = {
 // ---------------------------------------------------------------------------
 
 export function getClientIP(request: Request): string {
-  // Vercel forwards the real IP in x-forwarded-for
   const forwarded = request.headers.get("x-forwarded-for");
   if (forwarded) {
     return forwarded.split(",")[0].trim();
   }
-  // Fallback — should not happen in production
   return "unknown";
 }

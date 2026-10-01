@@ -150,69 +150,184 @@ export async function notifySubscribers(blogId: string, title: string, slug: str
     for (const sub of subscribers) {
       const unsubscribeUrl = `${baseUrl}/api/unsubscribe?token=${emailService.generateUnsubscribeToken(sub.email)}`;
       const emailHtml = `
-        <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f4f4f4; padding: 40px 20px; color: #333;">
-          <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
-            <div style="padding: 40px 30px;">
-              <p style="font-size: 16px; line-height: 1.6; color: #333; margin-bottom: 20px;">Hey, ${sub.name}.</p>
-              
-              <p style="font-size: 16px; line-height: 1.6; color: #333; margin-bottom: 20px;">How’s it going?</p>
-              
-              <p style="font-size: 16px; line-height: 1.6; color: #333; margin-bottom: 20px;">I wrote a new blog, and since you decided to leave your email with me, this little thing landed directly in your inbox.</p>
-              
-              <p style="font-size: 16px; line-height: 1.6; color: #333; margin-bottom: 10px;">The title says:</p>
-              
-              <h2 style="margin: 0 0 20px; font-size: 24px; color: #111; line-height: 1.3;">“${title}”</h2>
-              
-              <p style="font-size: 16px; line-height: 1.6; color: #333; margin-bottom: 30px;">If that sounds interesting, smash the button below and go straight to the story.</p>
-              
-              <div style="text-align: center; margin-bottom: 30px;">
-                <a href="${blogUrl}" style="display: inline-block; background-color: #ffa200; color: #ffffff; padding: 15px 35px; border-radius: 8px; font-size: 16px; font-weight: bold; text-decoration: none;">
-                  READ THE STORY →
-                </a>
-              </div>
-              
-              <p style="font-size: 16px; line-height: 1.6; color: #333; margin-bottom: 20px;">Want to see what else I’ve been building, writing, or obsessing over?</p>
-              
-              <div style="text-align: center; margin-bottom: 40px;">
-                <a href="${baseUrl}" style="display: inline-block; background-color: #383c45; color: #ffffff; padding: 15px 35px; border-radius: 8px; font-size: 16px; font-weight: bold; text-decoration: none;">
-                  VISIT MY WEBSITE →
-                </a>
-              </div>
-              
-              <hr style="border: 0; border-top: 1px solid #eeeeee; margin: 40px 0;">
-              
-              <h3 style="margin: 0 0 20px; font-size: 20px; color: #111;">And before you go...</h3>
-              
-              <p style="font-size: 16px; line-height: 1.6; color: #333; margin-bottom: 20px;">A few care tips for you:</p>
-              
-              <ul style="font-size: 16px; line-height: 1.6; color: #333; margin-bottom: 30px; padding-left: 20px;">
-                <li style="margin-bottom: 10px;">Drink <strong>6 glasses of water</strong> every day.</li>
-                <li style="margin-bottom: 10px;">Don’t forget to <strong>work out</strong>.</li>
-                <li style="margin-bottom: 10px;">Take a few minutes for <strong>meditation, silence, or simply doing nothing</strong>.</li>
-                <li style="margin-bottom: 10px;">Get <strong>7–8 hours of sleep</strong> — non-negotiable.</li>
-                <li style="margin-bottom: 10px;">For God’s sake, <strong>wear sunscreen</strong>.</li>
-                <li style="margin-bottom: 10px;">Most importantly, know what matters in your life and <strong>prioritize it</strong>.</li>
-              </ul>
-              
-              <p style="font-size: 16px; line-height: 1.6; color: #333; margin-bottom: 20px;">Take care of yourself.</p>
-              
-              <p style="font-size: 16px; line-height: 1.6; color: #333; margin-bottom: 30px;">And take care of the people you love.</p>
-              
-              <p style="font-size: 16px; line-height: 1.6; color: #666; font-style: italic;">— Naga Sai Teja (saitejdot)</p>
-              
-              <hr style="border: 0; border-top: 1px solid #eeeeee; margin: 40px 0;">
-              
-              <div style="text-align: center;">
-                <p style="font-size: 14px; line-height: 1.6; color: #666; margin-bottom: 10px;">Never want me to disturb you again?</p>
-                <p style="font-size: 14px; line-height: 1.6; color: #666; margin-bottom: 20px;">No hard feelings.</p>
-                <a href="${unsubscribeUrl}" style="display: inline-block; color: #ffa200; font-weight: bold; text-decoration: underline; font-size: 14px; margin-bottom: 10px;">
-                  UNSUBSCRIBE
-                </a>
-                <p style="font-size: 12px; color: #999; margin: 0;">You can leave anytime.</p>
-              </div>
+        <div style="font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #111214; padding: 40px 20px; color: #17181B; -webkit-font-smoothing: antialiased;">
+          <div style="max-width: 600px; margin: 0 auto; background-color: #F9F9F7; border-radius: 8px; overflow: hidden;">
+            
+            <!-- TOP HEADER -->
+            <div style="background-color: #111214; padding: 16px 24px; border-bottom: 1px solid #222;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td width="33%" align="left" valign="middle">
+                    <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: #3B3D42; margin-right: 6px;"></span>
+                    <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: #3B3D42; margin-right: 6px;"></span>
+                    <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: #3B3D42;"></span>
+                  </td>
+                  <td width="33%" align="center" valign="middle">
+                    <span style="color: #ffffff; font-weight: bold; font-size: 14px; letter-spacing: 1px;">saitejdot</span>
+                  </td>
+                  <td width="33%" align="right" valign="middle">
+                    <span style="color: #777A80; font-size: 12px; font-family: monospace;">01 / 01</span>
+                  </td>
+                </tr>
+              </table>
             </div>
+
+            <!-- QUOTE HERO -->
+            <div style="background-color: #111214; padding: 60px 40px; text-align: center; position: relative;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 30px;">
+                <tr>
+                  <td align="center">
+                    <div style="width: 40px; height: 1px; background-color: #FFD600; margin: 0 auto;"></div>
+                  </td>
+                </tr>
+              </table>
+              
+              <p style="font-family: Georgia, 'Times New Roman', serif; font-size: 26px; line-height: 1.5; color: #F9F9F7; margin: 0; font-style: italic;">
+                "Too many flaws to be perfect.<br>
+                Too many blessings to be ungrateful."
+              </p>
+              
+              <p style="font-size: 14px; color: #777A80; margin: 20px 0 0 0; letter-spacing: 1px;">
+                — saitejdot
+              </p>
+
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top: 30px;">
+                <tr>
+                  <td align="center">
+                    <div style="width: 6px; height: 6px; border-radius: 50%; background-color: #FFD600; margin: 0 auto;"></div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+
+            <!-- CONTENT BODY -->
+            <div style="padding: 50px 40px;">
+              
+              <!-- PERSONALIZED GREETING -->
+              <h1 style="margin: 0 0 5px 0; font-size: 24px; color: #17181B; font-weight: 800;">
+                hey, ${sub.name ? sub.name : 'there'}.
+              </h1>
+              <div style="width: 40px; height: 3px; background-color: #FFD600; margin-bottom: 30px;"></div>
+              
+              <!-- WELCOME MESSAGE -->
+              <p style="font-size: 16px; line-height: 1.6; color: #3B3D42; margin: 0 0 20px 0;">
+                How’s it going?
+              </p>
+              
+              <p style="font-size: 16px; line-height: 1.6; color: #3B3D42; margin: 0 0 40px 0;">
+                I wrote a new blog, and since you decided to leave your email with me, this little thing landed directly in your inbox.
+              </p>
+              
+              <!-- BLOG SECTION -->
+              <div style="background-color: #ffffff; border-left: 4px solid #FFD600; padding: 30px; margin-bottom: 40px; border-radius: 0 8px 8px 0; box-shadow: 0 2px 10px rgba(0,0,0,0.02);">
+                <p style="font-size: 12px; font-weight: bold; letter-spacing: 1.5px; color: #777A80; margin: 0 0 10px 0;">
+                  NEW ON THE BLOG
+                </p>
+                <h2 style="font-size: 22px; line-height: 1.4; color: #17181B; margin: 0 0 10px 0;">
+                  ${title}
+                </h2>
+                <p style="font-size: 14px; color: #777A80; font-style: italic; margin: 0;">
+                  a new story by Tej
+                </p>
+              </div>
+              
+              <!-- READ STORY CTA -->
+              <div style="text-align: center; margin-bottom: 20px;">
+                <a href="${blogUrl}" style="display: inline-block; background-color: #FFD600; color: #17181B; padding: 16px 36px; border-radius: 6px; font-size: 14px; font-weight: bold; text-decoration: none; letter-spacing: 0.5px;">
+                  READ THE STORY &rarr;
+                </a>
+              </div>
+              
+              <!-- WEBSITE CTA -->
+              <p style="text-align: center; font-size: 14px; color: #777A80; margin: 0 0 15px 0;">
+                Want to see what else I’m building?
+              </p>
+              
+              <div style="text-align: center; margin-bottom: 50px;">
+                <a href="${baseUrl}" style="display: inline-block; background-color: #111214; color: #F9F9F7; padding: 14px 32px; border-radius: 6px; font-size: 13px; font-weight: bold; text-decoration: none; letter-spacing: 0.5px;">
+                  VISIT SAITEJDOT &#8599;
+                </a>
+              </div>
+              
+              <hr style="border: 0; border-top: 1px solid #E5E5E0; margin: 0 0 40px 0;">
+              
+              <!-- CARE SECTION -->
+              <h3 style="margin: 0 0 5px 0; font-size: 16px; letter-spacing: 1.5px; color: #17181B; text-transform: uppercase;">
+                AND BEFORE YOU GO...
+              </h3>
+              <div style="width: 30px; height: 2px; background-color: #FFD600; margin-bottom: 25px;"></div>
+              
+              <p style="font-size: 15px; color: #3B3D42; margin: 0 0 25px 0;">
+                A few care tips for you:
+              </p>
+              
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 40px;">
+                <tr>
+                  <td width="30" valign="top" style="font-family: monospace; font-size: 14px; color: #777A80; padding-bottom: 12px;">01 &mdash;</td>
+                  <td valign="top" style="font-size: 15px; color: #3B3D42; padding-bottom: 12px; line-height: 1.5;">Drink <strong>6 glasses of water</strong> every day.</td>
+                </tr>
+                <tr>
+                  <td width="30" valign="top" style="font-family: monospace; font-size: 14px; color: #777A80; padding-bottom: 12px;">02 &mdash;</td>
+                  <td valign="top" style="font-size: 15px; color: #3B3D42; padding-bottom: 12px; line-height: 1.5;">Don’t forget to <strong>work out</strong>.</td>
+                </tr>
+                <tr>
+                  <td width="30" valign="top" style="font-family: monospace; font-size: 14px; color: #777A80; padding-bottom: 12px;">03 &mdash;</td>
+                  <td valign="top" style="font-size: 15px; color: #3B3D42; padding-bottom: 12px; line-height: 1.5;">Take a few minutes for <strong>meditation or silence</strong>.</td>
+                </tr>
+                <tr>
+                  <td width="30" valign="top" style="font-family: monospace; font-size: 14px; color: #777A80; padding-bottom: 12px;">04 &mdash;</td>
+                  <td valign="top" style="font-size: 15px; color: #3B3D42; padding-bottom: 12px; line-height: 1.5;">Get <strong>7–8 hours of sleep</strong> — non-negotiable.</td>
+                </tr>
+                <tr>
+                  <td width="30" valign="top" style="font-family: monospace; font-size: 14px; color: #777A80; padding-bottom: 12px;">05 &mdash;</td>
+                  <td valign="top" style="font-size: 15px; color: #3B3D42; padding-bottom: 12px; line-height: 1.5;">For God’s sake, <strong>wear sunscreen</strong>.</td>
+                </tr>
+              </table>
+              
+              <!-- HIGHLIGHTED PRINCIPLE -->
+              <div style="background-color: #111214; padding: 30px; border-radius: 8px; margin-bottom: 50px;">
+                <p style="font-size: 12px; font-weight: bold; letter-spacing: 2px; color: #FFD600; margin: 0 0 15px 0;">
+                  MOST IMPORTANTLY.
+                </p>
+                <p style="font-size: 18px; line-height: 1.5; color: #F9F9F7; margin: 0 0 5px 0;">
+                  Know what matters in your life.
+                </p>
+                <p style="font-size: 18px; line-height: 1.5; color: #F9F9F7; margin: 0;">
+                  Then prioritize it.
+                </p>
+              </div>
+              
+              <!-- PERSONAL CLOSING -->
+              <p style="font-size: 15px; line-height: 1.6; color: #3B3D42; margin: 0 0 10px 0;">
+                Take care of yourself.
+              </p>
+              
+              <p style="font-size: 15px; line-height: 1.6; color: #3B3D42; margin: 0 0 30px 0;">
+                And take care of the people you love.
+              </p>
+              
+              <p style="font-size: 14px; color: #777A80; font-style: italic; margin: 0;">
+                — Naga Sai Teja (saitejdot)
+              </p>
+              
+            </div>
+            
+            <!-- UNSUBSCRIBE FOOTER -->
+            <div style="background-color: #EAEAE5; padding: 40px; text-align: center;">
+              <p style="font-size: 13px; color: #777A80; margin: 0 0 10px 0;">
+                Never want me to disturb you again?
+              </p>
+              <a href="${unsubscribeUrl}" style="display: inline-block; color: #17181B; font-weight: bold; font-size: 12px; text-decoration: none; letter-spacing: 1px; border-bottom: 1px solid #17181B; padding-bottom: 2px; margin-bottom: 15px;">
+                UNSUBSCRIBE &rarr;
+              </a>
+              <p style="font-size: 13px; color: #777A80; margin: 0;">
+                No hard feelings.
+              </p>
+            </div>
+
           </div>
         </div>
+      `;        </div>
           </div>
         </div>
       `;

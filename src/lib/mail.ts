@@ -16,14 +16,14 @@ class GmailProvider implements EmailProvider {
     this.transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASSWORD,
+        user: process.env.EMAIL_USER || process.env.GMAIL_USER,
+        pass: process.env.EMAIL_PASS || process.env.GMAIL_APP_PASSWORD,
       },
     });
   }
 
   async send(options: { to: string; subject: string; text?: string; html?: string }) {
-    const from = `"Naga Sai Teja" <${process.env.GMAIL_USER}>`;
+    const from = `"Naga Sai Teja" <${process.env.EMAIL_USER || process.env.GMAIL_USER}>`;
     return this.transporter.sendMail({
       from,
       to: options.to,

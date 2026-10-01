@@ -78,14 +78,15 @@ export async function POST(request: Request) {
       );
     }
 
-    const alreadyLiked = story.likedBy.includes(visitorId);
+    const likedBy = story.likedBy || [];
+    const alreadyLiked = likedBy.includes(visitorId);
 
     if (alreadyLiked) {
-      story.likedBy = story.likedBy.filter((id: string) => id !== visitorId);
-      story.likes = Math.max(0, story.likes - 1);
+      story.likedBy = likedBy.filter((id: string) => id !== visitorId);
+      story.likes = Math.max(0, (story.likes || 0) - 1);
     } else {
-      story.likedBy.push(visitorId);
-      story.likes += 1;
+      story.likedBy = [...likedBy, visitorId];
+      story.likes = (story.likes || 0) + 1;
     }
 
     await story.save();

@@ -86,7 +86,7 @@ export async function POST(request: Request) {
       await story.save();
     }
 
-    return NextResponse.json({ success: true, views: story.views });
+    return NextResponse.json({ success: true, views: story.views || 0 });
   } catch (err) {
     console.error(`[${reqId}] View failed:`, (err as Error).message);
     return NextResponse.json(

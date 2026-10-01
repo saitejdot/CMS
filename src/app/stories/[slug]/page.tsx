@@ -133,7 +133,7 @@ export default async function StoryPage({ params }: Props) {
 
           {/* ENGAGEMENT */}
           <div className="notebook-engagement">
-            <LikeButton slug={slug} initialLikes={story.likes} />
+            <LikeButton slug={slug} initialLikes={story.likes || 0} />
             <ViewTracker slug={slug} initialViews={story.views || 0} />
           </div>
 

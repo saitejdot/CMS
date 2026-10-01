@@ -93,7 +93,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      likes: story.likes,
+      likes: story.likes || 0,
       liked: !alreadyLiked,
     });
   } catch (err) {

@@ -152,30 +152,67 @@ export async function notifySubscribers(blogId: string, title: string, slug: str
       const emailHtml = `
         <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f4f4f4; padding: 40px 20px; color: #333;">
           <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
-            <div style="background-color: #fcde7b; padding: 30px; text-align: center;">
-              <h1 style="margin: 0; font-size: 24px; color: #383c45; letter-spacing: 1px;">Naga Sai Teja</h1>
-              <p style="margin: 5px 0 0; font-size: 14px; color: #383c45; opacity: 0.8;">New Story Post Published</p>
-            </div>
-            <div style="padding: 40px 30px; text-align: center;">
-              <h2 style="margin: 0 0 20px; font-size: 28px; color: #111; line-height: 1.3;">${title}</h2>
-              <p style="font-size: 16px; line-height: 1.6; color: #666; margin-bottom: 30px;">
-                Hey! I've just published a new article in the <strong>${category}</strong> category.
-              </p>
-              <a href="${blogUrl}" style="display: inline-block; background-color: #ffa200; color: #ffffff; padding: 15px 35px; border-radius: 8px; font-size: 16px; font-weight: bold; text-decoration: none;">
-                Read the Full Story
-              </a>
-            </div>
-            <div style="background-color: #fafafa; padding: 30px; text-align: center; border-top: 1px solid #eeeeee;">
-              <p style="margin: 0; font-size: 14px; color: #999;">
-                You received this because you're subscribed to Naga Sai Teja's Story.
-              </p>
-              <p style="margin: 15px 0 0;">
-                <a href="${unsubscribeUrl}" style="color: #ffa200; text-decoration: underline; font-size: 13px;">Unsubscribe</a>
-              </p>
+            <div style="padding: 40px 30px;">
+              <p style="font-size: 16px; line-height: 1.6; color: #333; margin-bottom: 20px;">Hey, ${sub.name}.</p>
+              
+              <p style="font-size: 16px; line-height: 1.6; color: #333; margin-bottom: 20px;">How’s it going?</p>
+              
+              <p style="font-size: 16px; line-height: 1.6; color: #333; margin-bottom: 20px;">I wrote a new blog, and since you decided to leave your email with me, this little thing landed directly in your inbox.</p>
+              
+              <p style="font-size: 16px; line-height: 1.6; color: #333; margin-bottom: 10px;">The title says:</p>
+              
+              <h2 style="margin: 0 0 20px; font-size: 24px; color: #111; line-height: 1.3;">“${title}”</h2>
+              
+              <p style="font-size: 16px; line-height: 1.6; color: #333; margin-bottom: 30px;">If that sounds interesting, smash the button below and go straight to the story.</p>
+              
+              <div style="text-align: center; margin-bottom: 30px;">
+                <a href="${blogUrl}" style="display: inline-block; background-color: #ffa200; color: #ffffff; padding: 15px 35px; border-radius: 8px; font-size: 16px; font-weight: bold; text-decoration: none;">
+                  READ THE STORY →
+                </a>
+              </div>
+              
+              <p style="font-size: 16px; line-height: 1.6; color: #333; margin-bottom: 20px;">Want to see what else I’ve been building, writing, or obsessing over?</p>
+              
+              <div style="text-align: center; margin-bottom: 40px;">
+                <a href="${baseUrl}" style="display: inline-block; background-color: #383c45; color: #ffffff; padding: 15px 35px; border-radius: 8px; font-size: 16px; font-weight: bold; text-decoration: none;">
+                  VISIT MY WEBSITE →
+                </a>
+              </div>
+              
+              <hr style="border: 0; border-top: 1px solid #eeeeee; margin: 40px 0;">
+              
+              <h3 style="margin: 0 0 20px; font-size: 20px; color: #111;">And before you go...</h3>
+              
+              <p style="font-size: 16px; line-height: 1.6; color: #333; margin-bottom: 20px;">A few care tips for you:</p>
+              
+              <ul style="font-size: 16px; line-height: 1.6; color: #333; margin-bottom: 30px; padding-left: 20px;">
+                <li style="margin-bottom: 10px;">Drink <strong>6 glasses of water</strong> every day.</li>
+                <li style="margin-bottom: 10px;">Don’t forget to <strong>work out</strong>.</li>
+                <li style="margin-bottom: 10px;">Take a few minutes for <strong>meditation, silence, or simply doing nothing</strong>.</li>
+                <li style="margin-bottom: 10px;">Get <strong>7–8 hours of sleep</strong> — non-negotiable.</li>
+                <li style="margin-bottom: 10px;">For God’s sake, <strong>wear sunscreen</strong>.</li>
+                <li style="margin-bottom: 10px;">Most importantly, know what matters in your life and <strong>prioritize it</strong>.</li>
+              </ul>
+              
+              <p style="font-size: 16px; line-height: 1.6; color: #333; margin-bottom: 20px;">Take care of yourself.</p>
+              
+              <p style="font-size: 16px; line-height: 1.6; color: #333; margin-bottom: 30px;">And take care of the people you love.</p>
+              
+              <p style="font-size: 16px; line-height: 1.6; color: #666; font-style: italic;">— Naga Sai Teja (saitejdot)</p>
+              
+              <hr style="border: 0; border-top: 1px solid #eeeeee; margin: 40px 0;">
+              
+              <div style="text-align: center;">
+                <p style="font-size: 14px; line-height: 1.6; color: #666; margin-bottom: 10px;">Never want me to disturb you again?</p>
+                <p style="font-size: 14px; line-height: 1.6; color: #666; margin-bottom: 20px;">No hard feelings.</p>
+                <a href="${unsubscribeUrl}" style="display: inline-block; color: #ffa200; font-weight: bold; text-decoration: underline; font-size: 14px; margin-bottom: 10px;">
+                  UNSUBSCRIBE
+                </a>
+                <p style="font-size: 12px; color: #999; margin: 0;">You can leave anytime.</p>
+              </div>
             </div>
           </div>
-          <div style="text-align: center; margin-top: 20px; font-size: 12px; color: #bbb;">
-            &copy; ${new Date().getFullYear()} Naga Sai Teja. All rights reserved.
+        </div>
           </div>
         </div>
       `;

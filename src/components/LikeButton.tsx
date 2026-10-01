@@ -37,14 +37,10 @@ export default function LikeButton({
     const visitorId = getVisitorId();
 
     // Optimistic UI update
-    const wasLiked = liked;
-    setLiked(!wasLiked);
-    setLikes((prev) => (wasLiked ? Math.max(0, prev - 1) : prev + 1));
+    setLikes((prev) => prev + 1);
 
-    if (!wasLiked) {
-      setAnimating(true);
-      setTimeout(() => setAnimating(false), 600);
-    }
+    setAnimating(true);
+    setTimeout(() => setAnimating(false), 600);
 
     const res = await fetch("/api/stories/like", {
       method: "POST",
@@ -56,21 +52,6 @@ export default function LikeButton({
 
     if (data.success) {
       setLikes(data.likes);
-      setLiked(data.liked);
-
-      // Sync localStorage
-      const likedPosts: string[] = JSON.parse(
-        localStorage.getItem("cms_liked_posts") || "[]"
-      );
-      if (data.liked) {
-        if (!likedPosts.includes(slug)) {
-          likedPosts.push(slug);
-        }
-      } else {
-        const idx = likedPosts.indexOf(slug);
-        if (idx > -1) likedPosts.splice(idx, 1);
-      }
-      localStorage.setItem("cms_liked_posts", JSON.stringify(likedPosts));
     }
   };
 

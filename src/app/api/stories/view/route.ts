@@ -78,13 +78,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const viewedBy = story.viewedBy || [];
-    const alreadyViewed = viewedBy.includes(visitorId);
-    if (!alreadyViewed) {
-      story.viewedBy = [...viewedBy, visitorId];
-      story.views = (story.views || 0) + 1;
-      await story.save();
-    }
+    story.views = (story.views || 0) + 1;
+    await story.save();
 
     return NextResponse.json({ success: true, views: story.views || 0 });
   } catch (err) {

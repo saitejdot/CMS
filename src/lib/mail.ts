@@ -131,7 +131,7 @@ export async function notifySubscribers(blogId: string, title: string, slug: str
       return;
     }
     
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://tejwrites.vercel.app";
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://saitejdot.vercel.app";
     const blogUrl = `${baseUrl}/stories/${slug}`;
     
     const subscribers = await Subscriber.find().select("email").lean();

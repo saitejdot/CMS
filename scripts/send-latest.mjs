@@ -1,157 +1,76 @@
+/**
+ * Send the new email template for a specific blog post.
+ * Usage: node scripts/send-latest.mjs
+ */
+
+import { MongoClient } from "mongodb";
 import nodemailer from "nodemailer";
 import crypto from "crypto";
+import * as dotenv from "dotenv";
+dotenv.config();
 
-// -----------------------------------------------------------------------------
-// Providers
-// -----------------------------------------------------------------------------
+const MONGODB_URI = process.env.MONGODB_URI;
+const EMAIL_USER = process.env.EMAIL_USER;
+const EMAIL_PASS = process.env.EMAIL_PASS;
+const UNSUBSCRIBE_SECRET = process.env.UNSUBSCRIBE_SECRET;
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://saitejdot.vercel.app";
 
-export interface EmailProvider {
-  send(options: { to: string; subject: string; text?: string; html?: string }): Promise<any>;
+if (!MONGODB_URI || !EMAIL_USER || !EMAIL_PASS || !UNSUBSCRIBE_SECRET) {
+  console.error("❌ Missing required environment variables in .env");
+  process.exit(1);
 }
 
-class GmailProvider implements EmailProvider {
-  private transporter: nodemailer.Transporter;
-
-  constructor() {
-    this.transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER || process.env.GMAIL_USER,
-        pass: process.env.EMAIL_PASS || process.env.GMAIL_APP_PASSWORD,
-      },
-    });
-  }
-
-  async send(options: { to: string; subject: string; text?: string; html?: string }) {
-    const from = `"Naga Sai Teja" <${process.env.EMAIL_USER || process.env.GMAIL_USER}>`;
-    return this.transporter.sendMail({
-      from,
-      to: options.to,
-      subject: options.subject,
-      text: options.text,
-      html: options.html,
-    });
-  }
+function generateUnsubscribeToken(email) {
+  const hmac = crypto.createHmac("sha256", UNSUBSCRIBE_SECRET);
+  hmac.update(email);
+  const signature = hmac.digest("hex");
+  const payload = `${email}:${signature}`;
+  return Buffer.from(payload).toString("base64url");
 }
 
-// -----------------------------------------------------------------------------
-// Service Abstraction
-// -----------------------------------------------------------------------------
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: EMAIL_USER,
+    pass: EMAIL_PASS,
+  },
+});
 
-class EmailService {
-  private provider: EmailProvider;
+async function main() {
+  const client = new MongoClient(MONGODB_URI);
+  await client.connect();
+  console.log("✅ Connected to MongoDB");
 
-  constructor(provider: EmailProvider) {
-    this.provider = provider;
+  const db = client.db();
+
+  // Find the post
+  const story = await db.collection("blogs").findOne({ title: /A comeback/i });
+  if (!story) {
+    console.log("❌ Could not find the blog post.");
+    process.exit(1);
   }
 
-  async sendTransactional(to: string, subject: string, text: string, html?: string) {
-    return this.provider.send({ to, subject, text, html });
+  const title = story.title;
+  const slug = story.slug;
+  const blogUrl = `${baseUrl}/stories/${slug}`;
+
+  const col = db.collection("subscribers");
+  const subscribers = await col.find().toArray();
+
+  if (subscribers.length === 0) {
+    console.log("⚠️  No subscribers found.");
+    process.exit(0);
   }
 
-  /**
-   * Generates a stable idempotency key for a logical notification.
-   */
-  generateIdempotencyKey(storyId: string, publicationVersion: number, notificationType: string): string {
-    return `story-publication-notification:${storyId}:${publicationVersion}:${notificationType}`;
-  }
+  console.log(`Found ${subscribers.length} subscribers. Sending emails for "${title}"...`);
 
-  /**
-   * Generates a secure HMAC signed token for unsubscribing.
-   */
-  generateUnsubscribeToken(email: string): string {
-    const secret = process.env.UNSUBSCRIBE_SECRET;
-    if (!secret) throw new Error("UNSUBSCRIBE_SECRET is not set");
-    
-    // We sign the email itself
-    const hmac = crypto.createHmac("sha256", secret);
-    hmac.update(email);
-    const signature = hmac.digest("hex");
-    
-    // The token is base64(email:signature)
-    const payload = `${email}:${signature}`;
-    return Buffer.from(payload).toString("base64url");
-  }
+  let sent = 0;
 
-  /**
-   * Verifies an unsubscribe token and returns the email if valid.
-   */
-  verifyUnsubscribeToken(token: string): string | null {
-    try {
-      const secret = process.env.UNSUBSCRIBE_SECRET;
-      if (!secret) return null;
+  for (const sub of subscribers) {
+    const unsubscribeUrl = `${baseUrl}/api/unsubscribe?token=${generateUnsubscribeToken(sub.email)}`;
 
-      const payload = Buffer.from(token, "base64url").toString("utf-8");
-      const [email, signature] = payload.split(":");
-      
-      if (!email || !signature) return null;
-
-      const hmac = crypto.createHmac("sha256", secret);
-      hmac.update(email);
-      const expectedSignature = hmac.digest("hex");
-
-      // Use constant-time comparison to prevent timing attacks
-      if (crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
-        return email;
-      }
-      return null;
-    } catch (error) {
-      return null;
-    }
-  }
-}
-
-// Initialize the service with our chosen provider
-const gmailProvider = new GmailProvider();
-export const emailService = new EmailService(gmailProvider);
-
-// Temporary backward compatibility
-export async function sendEmail(to: string, subject: string, text: string, html?: string) {
-  return emailService.sendTransactional(to, subject, text, html);
-}
-
-// -----------------------------------------------------------------------------
-// Subscriber Notification Logic
-// -----------------------------------------------------------------------------
-
-import Subscriber from "@/models/Subscriber";
-import EmailLog from "@/models/EmailLog";
-import { connectDB } from "@/lib/db";
-
-export async function notifySubscribers(blogId: string, title: string, slug: string, category: string, reqId: string) {
-  console.log(`[${reqId}] Starting async subscriber notification for story ${blogId}`);
-  try {
-    await connectDB();
-    const publicationVersion = 1; // Simplify for now since we don't track versions yet
-    const notificationType = "publish";
-    const idempotencyKey = emailService.generateIdempotencyKey(blogId, publicationVersion, notificationType);
-    
-    // Check for idempotency
-    const existingLog = await EmailLog.findOne({ idempotencyKey });
-    if (existingLog && existingLog.status === "SENT") {
-      console.log(`[${reqId}] Notification already sent (idempotency key match).`);
-      return;
-    }
-    
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://saitejdot.vercel.app";
-    const blogUrl = `${baseUrl}/stories/${slug}`;
-    
-    const subscribers = await Subscriber.find().select("email name").lean();
-    let sentCount = 0;
-    
-    // We log PENDING state
-    let emailLog = existingLog || new EmailLog({
-      storyId: blogId,
-      idempotencyKey,
-      recipientCount: subscribers.length,
-      status: "PENDING",
-      requestId: reqId
-    });
-    await emailLog.save();
-
-    for (const sub of subscribers) {
-      const unsubscribeUrl = `${baseUrl}/api/unsubscribe?token=${emailService.generateUnsubscribeToken(sub.email)}`;
-      const emailHtml = `
+    // Exact template we just designed
+    const emailHtml = `
         <div style="font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #111214; padding: 40px 20px; color: #17181B; -webkit-font-smoothing: antialiased;">
           <div style="max-width: 600px; margin: 0 auto; background-color: #F9F9F7; border-radius: 8px; overflow: hidden;">
             
@@ -229,7 +148,7 @@ export async function notifySubscribers(blogId: string, title: string, slug: str
                   ${title}
                 </h2>
                 <p style="font-size: 14px; color: #777A80; font-style: italic; margin: 0;">
-                  a new story by Tej
+                  a new story by Naga Sai Teja
                 </p>
               </div>
               
@@ -330,34 +249,26 @@ export async function notifySubscribers(blogId: string, title: string, slug: str
           </div>
         </div>
       `;
-      try {
-        await emailService.sendTransactional(
-          sub.email,
-          `New Post: ${title}`,
-          `Hey! A new story is live: ${title}. Read it here: ${blogUrl}`,
-          emailHtml
-        );
-        sentCount++;
-      } catch (err) {
-        console.error(`[${reqId}] Failed to send to ${sub.email}`);
-      }
-    }
-    
-    // Update log
-    emailLog.status = "SENT";
-    emailLog.recipientCount = sentCount; // Actual sent
-    await emailLog.save();
-    console.log(`[${reqId}] Notification sent successfully to ${sentCount} subscribers.`);
-  } catch (error) {
-    console.error(`[${reqId}] Notification process failed:`, error);
+
     try {
-      const idempotencyKey = emailService.generateIdempotencyKey(blogId, 1, "publish");
-      await EmailLog.updateOne(
-        { idempotencyKey },
-        { status: "FAILED", error: (error as Error).message }
-      );
-    } catch (e) {
-      console.error(`[${reqId}] Could not update EmailLog on failure:`, e);
+      await transporter.sendMail({
+        from: `"Naga Sai Teja" <${EMAIL_USER}>`,
+        to: sub.email,
+        subject: `New post: ${title}`,
+        html: emailHtml,
+      });
+      console.log(`  ✅ Sent to: ${sub.name} <${sub.email}>`);
+      sent++;
+    } catch (err) {
+      console.error(`  ❌ Failed for ${sub.email}: `, err.message);
     }
   }
+
+  await client.close();
+  console.log(`\n🎉 Done! Sent ${sent} emails for post: "${title}".`);
 }
+
+main().catch((err) => {
+  console.error("Fatal error:", err);
+  process.exit(1);
+});

@@ -92,7 +92,7 @@ export default function AdminClient() {
   const [storySlug, setStorySlug] = useState("");
   const [storyCategory, setStoryCategory] = useState("Tech");
   const [storyTags, setStoryTags] = useState("");
-  const [storyStatus, setStoryStatus] = useState("DRAFT");
+  const [storyStatus, setStoryStatus] = useState("PUBLISHED");
   const [storyContent, setStoryContent] = useState("");
   const [sendEmailNotification, setSendEmailNotification] = useState(true);
   const [editingStory, setEditingStory] = useState<Story | null>(null);

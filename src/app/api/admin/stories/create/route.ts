@@ -91,16 +91,10 @@ export async function POST(request: Request) {
       title, slug, content, category, status, tags, coverImage,
     });
 
-    // Email notifications — only for PUBLISHED stories, not drafts.
-    // We use `after()` so the response returns immediately, but also
-    // call it directly as a fire-and-forget promise since Vercel
-    // serverless may freeze the function before after() callbacks finish.
     if (sendEmail && status === "PUBLISHED") {
-      const notifyPromise = notifySubscribers(
+      await notifySubscribers(
         newStory._id.toString(), title, slug, category, reqId
       );
-      // after() gives the task more time on platforms that support it
-      after(() => notifyPromise);
     }
 
     return NextResponse.json({ success: true, data: newStory });

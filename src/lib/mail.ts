@@ -158,7 +158,7 @@ export async function notifySubscribers(blogId: string, title: string, slug: str
     });
     await emailLog.save();
 
-    for (const sub of subscribers) {
+    await Promise.allSettled(subscribers.map(async (sub) => {
       const unsubscribeUrl = `${baseUrl}/api/unsubscribe?token=${emailService.generateUnsubscribeToken(sub.email)}`;
       const emailHtml = `
         <div style="font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #111214; padding: 40px 20px; color: #17181B; -webkit-font-smoothing: antialiased;">
@@ -350,7 +350,7 @@ export async function notifySubscribers(blogId: string, title: string, slug: str
       } catch (err) {
         console.error(`[${reqId}] Failed to send to ${sub.email}`);
       }
-    }
+    }));
     
     // Update log
     emailLog.status = "SENT";

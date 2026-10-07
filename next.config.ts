@@ -58,9 +58,9 @@ const securityHeaders = [
       "media-src 'self' blob: data:",
       // Fetch/XHR (same origin only)
       "connect-src 'self'",
-      // No frames allowed
+      // No frames allowed (except YouTube for TipTap embeds)
       "frame-ancestors 'none'",
-      "frame-src 'none'",
+      "frame-src 'none' https://www.youtube.com",
       // No plugins
       "object-src 'none'",
       "base-uri 'self'",

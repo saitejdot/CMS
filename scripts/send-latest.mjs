@@ -44,7 +44,7 @@ async function main() {
   const db = client.db();
 
   // Find the post
-  const story = await db.collection("blogs").findOne({ title: /A comeback/i });
+  const story = await db.collection("blogs").findOne({ title: /Endhu koraku/i });
   if (!story) {
     console.log("❌ Could not find the blog post.");
     process.exit(1);

@@ -16,6 +16,7 @@ import { connectDB } from "@/lib/db";
 import Subscriber from "@/models/Subscriber";
 import { rateLimiters, getClientIP } from "@/lib/rateLimit";
 import { generateRequestId } from "@/lib/requestId";
+import { checkCSRF } from "@/lib/csrf";
 
 const MAX_BODY_BYTES = 1024; // 1 KB
 
@@ -45,6 +46,10 @@ export async function POST(request: Request) {
       { status: 429 }
     );
   }
+
+  // 3. CSRF Check
+  const csrfError = checkCSRF(request);
+  if (csrfError) return csrfError;
 
   // 3. Parse and validate
   let body: unknown;

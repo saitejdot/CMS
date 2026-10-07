@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import ContactSection from "@/components/ContactSection";
 import { formatDateIST, stripHtml } from "@/utils/date";
-import type { Metadata } from "next";
 
 interface Story {
   _id: string;

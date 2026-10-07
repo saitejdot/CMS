@@ -39,6 +39,7 @@ export default function Navbar() {
           onClick={() => setOpen(!open)}
           className="md:hidden text-xl"
           style={{ color: "var(--text)" }}
+          aria-label="Toggle mobile menu"
         >
           ☰
         </button>

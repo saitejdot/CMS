@@ -82,7 +82,11 @@ class EmailService {
       if (!secret) return null;
 
       const payload = Buffer.from(token, "base64url").toString("utf-8");
-      const [email, signature] = payload.split(":");
+      const colonIdx = payload.indexOf(":");
+      if (colonIdx === -1) return null;
+      
+      const email = payload.slice(0, colonIdx);
+      const signature = payload.slice(colonIdx + 1);
       
       if (!email || !signature) return null;
 
@@ -90,8 +94,13 @@ class EmailService {
       hmac.update(email);
       const expectedSignature = hmac.digest("hex");
 
+      // timingSafeEqual throws if buffers are different lengths
+      const sigBuf = Buffer.from(signature);
+      const expBuf = Buffer.from(expectedSignature);
+      if (sigBuf.length !== expBuf.length) return null;
+
       // Use constant-time comparison to prevent timing attacks
-      if (crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
+      if (crypto.timingSafeEqual(sigBuf, expBuf)) {
         return email;
       }
       return null;

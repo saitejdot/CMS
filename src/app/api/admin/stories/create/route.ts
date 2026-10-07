@@ -22,7 +22,6 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { connectDB } from "@/lib/db";
 import Story from "@/models/Story";
-import Subscriber from "@/models/Subscriber";
 import { notifySubscribers } from "@/lib/mail";
 import { after } from "next/server";
 import { requireAdmin } from "@/lib/auth";
@@ -92,11 +91,16 @@ export async function POST(request: Request) {
       title, slug, content, category, status, tags, coverImage,
     });
 
-    // Email notifications — fire and forget via Next.js `after`
-    if (sendEmail) {
-      after(async () => {
-        await notifySubscribers(newStory._id.toString(), title, slug, category, reqId);
-      });
+    // Email notifications — only for PUBLISHED stories, not drafts.
+    // We use `after()` so the response returns immediately, but also
+    // call it directly as a fire-and-forget promise since Vercel
+    // serverless may freeze the function before after() callbacks finish.
+    if (sendEmail && status === "PUBLISHED") {
+      const notifyPromise = notifySubscribers(
+        newStory._id.toString(), title, slug, category, reqId
+      );
+      // after() gives the task more time on platforms that support it
+      after(() => notifyPromise);
     }
 
     return NextResponse.json({ success: true, data: newStory });

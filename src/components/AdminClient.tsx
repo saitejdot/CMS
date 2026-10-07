@@ -197,19 +197,29 @@ export default function AdminClient() {
   const handleCreateStory = async () => {
     if (!storyTitle.trim() || !storyContent.trim()) return alert("Title and content required");
     const slug = storySlug || storyTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-    await fetch("/api/admin/stories/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        title: storyTitle, slug, content: storyContent,
-        category: storyCategory, status: storyStatus,
-        tags: storyTags.split(",").map((t) => t.trim()).filter(Boolean),
-        coverImage: "",
-        sendEmail: sendEmailNotification,
-      }),
-    });
-    setStoryTitle(""); setStorySlug(""); setStoryContent(""); setStoryTags(""); setSendEmailNotification(true);
-    fetchStories();
+    try {
+      const res = await fetch("/api/admin/stories/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: storyTitle, slug, content: storyContent,
+          category: storyCategory, status: storyStatus,
+          tags: storyTags.split(",").map((t) => t.trim()).filter(Boolean),
+          coverImage: "",
+          sendEmail: sendEmailNotification,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        alert("Failed to create story: " + (data.error || `HTTP ${res.status}`));
+        return;
+      }
+      setStoryTitle(""); setStorySlug(""); setStoryContent(""); setStoryTags(""); setSendEmailNotification(true);
+      fetchStories();
+    } catch (err) {
+      console.error(err);
+      alert("Network error while creating story.");
+    }
   };
 
   const handleUpdateStory = async () => {
